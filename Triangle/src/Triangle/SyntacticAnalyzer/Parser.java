@@ -270,6 +270,36 @@ public class Parser {
         commandAST = new WhileCommand(eAST, cAST, commandPos);
       }
       break;
+      
+    case Token.FOR:
+      {
+        acceptIt();
+        Vname vAST = parseVname();
+        accept(Token.BECOMES);
+        Expression e1AST = parseExpression();
+        
+        boolean isDownto;
+        if (currentToken.kind == Token.TO) {
+            isDownto = false;
+            acceptIt();
+        }
+        else if (currentToken.kind == Token.DOWNTO) {
+            isDownto = true;
+            acceptIt();
+        } 
+        else {
+            syntacticError("Expected TO or DOWNTO, but found \"%\"", currentToken.spelling);
+            isDownto = false; // por si acaso
+        }
+        
+        Expression e2AST = parseExpression(); 
+        accept(Token.DO);
+        Command cAST = parseSingleCommand(); // comando a ejecutar en cada iteración
+        finish(commandPos);
+        
+        commandAST = new ForCommand(vAST, e1AST, e2AST,cAST,isDownto,commandPos);
+      }
+      break;
 
     case Token.SEMICOLON:
     case Token.END:

@@ -80,6 +80,7 @@ import Triangle.AbstractSyntaxTrees.VarFormalParameter;
 import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.VnameExpression;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
+import Triangle.AbstractSyntaxTrees.ForCommand;
 
 public class LayoutVisitor implements Visitor {
 
@@ -121,6 +122,10 @@ public class LayoutVisitor implements Visitor {
     return layoutBinary("WhileCom.", ast.E, ast.C);
   }
   
+  // Dibuja el arbol para el FOR
+  public Object visitForCommand(ForCommand ast, Object obj){
+      return layoutQuaternary("ForCom.", ast.V, ast.E1, ast.E2,ast.C);
+  }
   // Expressions
   public Object visitArrayExpression(ArrayExpression ast, Object obj) {
     return layoutUnary("ArrayExpr.", ast.AA);
@@ -418,6 +423,7 @@ public class LayoutVisitor implements Visitor {
     attachParent(dt, join(dt));
     return dt;
   }
+  
 
   private void attachParent(DrawingTree dt, int w) {
     int y = PARENT_SEP;
