@@ -273,6 +273,7 @@ public class Parser {
       
     case Token.FOR:
       {
+        System.out.println("ENtra For");
         acceptIt();
         Vname vAST = parseVname();
         accept(Token.BECOMES);
@@ -470,6 +471,7 @@ public class Parser {
   }
 
   RecordAggregate parseRecordAggregate() throws SyntaxError {
+    System.out.println("Entra a record");
     RecordAggregate aggregateAST = null; // in case there's a syntactic error
 
     SourcePosition aggregatePos = new SourcePosition();
@@ -912,9 +914,9 @@ public class Parser {
 
     start(fieldPos);
     Identifier iAST = parseIdentifier();
-    accept(Token.COLON);
+    accept(Token.COLON); 
     TypeDenoter tAST = parseTypeDenoter();
-    if (currentToken.kind == Token.COMMA) {
+    if (currentToken.kind == Token.SEMICOLON) { //CAMBIE COLON POR SEMI
       acceptIt();
       FieldTypeDenoter fAST = parseFieldTypeDenoter();
       finish(fieldPos);
