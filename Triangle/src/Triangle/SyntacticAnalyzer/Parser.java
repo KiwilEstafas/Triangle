@@ -14,10 +14,8 @@
 
 package Triangle.SyntacticAnalyzer;
 
-import java.util.LinkedHashMap;
-
-import Triangle.ErrorReporter;
 import Triangle.AbstractSyntaxTrees.*;
+import Triangle.ErrorReporter;
 
 public class Parser {
 
@@ -301,6 +299,19 @@ public class Parser {
         commandAST = new ForCommand(vAST, e1AST, e2AST,cAST,isDownto,commandPos);
       }
       break;
+
+      case Token.REPEAT:
+      {
+          System.out.println("Entra Repeat");
+          acceptIt(); // consume 'repeat'
+          Command bodyAST = parseSingleCommand();
+          accept(Token.UNTIL); // consume 'until'
+          Expression condAST = parseExpression();
+          finish(commandPos);
+          commandAST = new RepeatCommand(bodyAST, condAST, commandPos);
+      }
+      break;
+
 
     case Token.SEMICOLON:
     case Token.END:

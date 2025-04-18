@@ -1,0 +1,8 @@
+let
+  var i : Integer;
+in
+  repeat
+    putint(i);
+    newline;
+    i := i + 1;
+  until i = 5;

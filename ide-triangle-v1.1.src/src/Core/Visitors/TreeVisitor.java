@@ -49,6 +49,7 @@ import Triangle.AbstractSyntaxTrees.ProcFormalParameter;
 import Triangle.AbstractSyntaxTrees.Program;
 import Triangle.AbstractSyntaxTrees.RecordExpression;
 import Triangle.AbstractSyntaxTrees.RecordTypeDenoter;
+import Triangle.AbstractSyntaxTrees.RepeatCommand;
 import Triangle.AbstractSyntaxTrees.SequentialCommand;
 import Triangle.AbstractSyntaxTrees.SequentialDeclaration;
 import Triangle.AbstractSyntaxTrees.SimpleTypeDenoter;
@@ -120,6 +121,11 @@ public class TreeVisitor implements Visitor {
     public Object visitForCommand(ForCommand ast, Object obj){
         return(createQuaternary("For Command",ast.V, ast.E1, ast.E2,ast.C));
     }
+
+    public Object visitRepeatCommand(RepeatCommand ast, Object obj) {
+        return(createBinary("Repeat Command", ast.body, ast.condition));
+    }
+    
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc=" Expressions ">

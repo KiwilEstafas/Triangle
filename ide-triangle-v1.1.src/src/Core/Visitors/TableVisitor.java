@@ -49,6 +49,7 @@ import Triangle.AbstractSyntaxTrees.ProcFormalParameter;
 import Triangle.AbstractSyntaxTrees.Program;
 import Triangle.AbstractSyntaxTrees.RecordExpression;
 import Triangle.AbstractSyntaxTrees.RecordTypeDenoter;
+import Triangle.AbstractSyntaxTrees.RepeatCommand;
 import Triangle.AbstractSyntaxTrees.SequentialCommand;
 import Triangle.AbstractSyntaxTrees.SequentialDeclaration;
 import Triangle.AbstractSyntaxTrees.SimpleTypeDenoter;
@@ -149,7 +150,16 @@ public class TableVisitor implements Visitor {
       ast.C.visit(this,null);
       return(null);
   }
+
+    public Object visitRepeatCommand(RepeatCommand ast, Object o) {
+        ast.body.visit(this, null);
+        ast.condition.visit(this, null);
+        return(null);
+    }
   // </editor-fold>
+
+    
+
 
   // <editor-fold defaultstate="collapsed" desc=" Expressions ">
   // Expressions
