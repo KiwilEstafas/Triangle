@@ -28,6 +28,7 @@ import Triangle.AbstractSyntaxTrees.CallCommand;
 import Triangle.AbstractSyntaxTrees.CallExpression;
 import Triangle.AbstractSyntaxTrees.CharTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CharacterExpression;
+import Triangle.AbstractSyntaxTrees.BoolExpression;
 import Triangle.AbstractSyntaxTrees.CharacterLiteral;
 import Triangle.AbstractSyntaxTrees.ConstActualParameter;
 import Triangle.AbstractSyntaxTrees.ConstDeclaration;
@@ -81,6 +82,7 @@ import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.VnameExpression;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
 import Triangle.AbstractSyntaxTrees.ForCommand;
+import Triangle.AbstractSyntaxTrees.BoolLiteral;
 
 public class LayoutVisitor implements Visitor {
 
@@ -143,6 +145,9 @@ public class LayoutVisitor implements Visitor {
     return layoutUnary("Char.Expr.", ast.CL);
   }
 
+  public Object visitBoolExpression(BoolExpression ast, Object obj) {
+    return layoutNullary("EmptyExpr.");
+  }
   public Object visitEmptyExpression(EmptyExpression ast, Object obj) {
     return layoutNullary("EmptyExpr.");
   }
@@ -347,6 +352,10 @@ public class LayoutVisitor implements Visitor {
   public Object visitOperator(Operator ast, Object obj) {
     return layoutNullary(ast.spelling);
   }
+
+public Object visitBoolLiteral(BoolLiteral ast, Object o) {
+       return layoutNullary("EmptyExpr.");
+    }
 
 
   // Value-or-variable names

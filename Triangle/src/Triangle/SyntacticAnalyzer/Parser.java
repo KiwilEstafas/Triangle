@@ -407,6 +407,15 @@ public class Parser {
         expressionAST = new CharacterExpression(clAST, expressionPos);
       }
       break;
+      
+    case Token.TRUE:
+    case Token.FALSE: {
+        BoolLiteral blAST = new BoolLiteral(currentToken.spelling, currentToken.position);
+        acceptIt();
+        finish(expressionPos);
+        expressionAST = new BoolExpression(blAST, expressionPos);
+        }
+    break;
 
     case Token.LBRACKET:
       {

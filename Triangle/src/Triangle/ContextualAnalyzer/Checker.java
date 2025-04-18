@@ -187,7 +187,11 @@ public final class Checker implements Visitor {
         ast.type = StdEnvironment.charType;
         return ast.type;
     }
-
+    
+    public Object visitBoolExpression(BoolExpression ast, Object o) {
+        ast.type = StdEnvironment.booleanType;
+        return ast.type;
+    }
     public Object visitEmptyExpression(EmptyExpression ast, Object o) {
         ast.type = null;
         return ast.type;
@@ -640,6 +644,10 @@ public final class Checker implements Visitor {
             O.decl = binding;
         }
         return binding;
+    }
+    
+    public Object visitBoolLiteral(BoolLiteral BL, Object o){
+        return StdEnvironment.booleanType;
     }
 
     // Value-or-variable names

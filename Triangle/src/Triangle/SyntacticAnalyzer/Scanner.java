@@ -102,7 +102,13 @@ public final class Scanner {
       takeIt();
       while (isLetter(currentChar) || isDigit(currentChar))
         takeIt();
-      return Token.IDENTIFIER;
+        String spelling = currentSpelling.toString();
+        if (spelling.equals("true"))
+            return Token.TRUE;
+        else if (spelling.equals("false"))
+            return Token.FALSE;
+        else
+            return Token.IDENTIFIER;
 
     case '0':  case '1':  case '2':  case '3':  case '4':
     case '5':  case '6':  case '7':  case '8':  case '9':

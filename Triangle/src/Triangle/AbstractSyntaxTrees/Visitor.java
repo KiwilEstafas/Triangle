@@ -31,6 +31,7 @@ public interface Visitor {
   public abstract Object visitBinaryExpression(BinaryExpression ast, Object o);
   public abstract Object visitCallExpression(CallExpression ast, Object o);
   public abstract Object visitCharacterExpression(CharacterExpression ast, Object o);
+  public abstract Object visitBoolExpression(BoolExpression ast, Object o);
   public abstract Object visitEmptyExpression(EmptyExpression ast, Object o);
   public abstract Object visitIfExpression(IfExpression ast, Object o);
   public abstract Object visitIntegerExpression(IntegerExpression ast, Object o);
@@ -95,6 +96,7 @@ public interface Visitor {
   public abstract Object visitIdentifier(Identifier ast, Object o);
   public abstract Object visitIntegerLiteral(IntegerLiteral ast, Object o);
   public abstract Object visitOperator(Operator ast, Object o);
+  public abstract Object visitBoolLiteral(BoolLiteral ast, Object o);
 
   // Value-or-variable names
   public abstract Object visitDotVname(DotVname ast, Object o);

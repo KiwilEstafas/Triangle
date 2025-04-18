@@ -31,6 +31,7 @@ import Triangle.AbstractSyntaxTrees.ArrayTypeDenoter;
 import Triangle.AbstractSyntaxTrees.AssignCommand;
 import Triangle.AbstractSyntaxTrees.BinaryExpression;
 import Triangle.AbstractSyntaxTrees.BinaryOperatorDeclaration;
+import Triangle.AbstractSyntaxTrees.BoolLiteral;
 import Triangle.AbstractSyntaxTrees.BoolTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CallCommand;
 import Triangle.AbstractSyntaxTrees.CallExpression;
@@ -69,6 +70,7 @@ import Triangle.AbstractSyntaxTrees.ProcDeclaration;
 import Triangle.AbstractSyntaxTrees.ProcFormalParameter;
 import Triangle.AbstractSyntaxTrees.Program;
 import Triangle.AbstractSyntaxTrees.RecordExpression;
+import Triangle.AbstractSyntaxTrees.BoolExpression;
 import Triangle.AbstractSyntaxTrees.RecordTypeDenoter;
 import Triangle.AbstractSyntaxTrees.SequentialCommand;
 import Triangle.AbstractSyntaxTrees.SequentialDeclaration;
@@ -240,6 +242,16 @@ public Object visitForCommand(ForCommand ast, Object o) {
         emit(Machine.LOADLop, 0, 0, ast.CL.spelling.charAt(1));
         return valSize;
     }
+    
+    public Object visitBoolExpression(BoolExpression ast, Object o) {
+    Frame frame = (Frame) o;
+    Integer valSize = (Integer) ast.type.visit(this, null);
+
+    int boolValue = ast.BL.spelling.equals("true") ? 1 : 0;
+    emit(Machine.LOADLop, 0, 0, boolValue);
+
+    return valSize;
+}
 
     public Object visitEmptyExpression(EmptyExpression ast, Object o) {
         return new Integer(0);
@@ -656,6 +668,10 @@ public Object visitForCommand(ForCommand ast, Object o) {
 
     // Literals, Identifiers and Operators
     public Object visitCharacterLiteral(CharacterLiteral ast, Object o) {
+        return null;
+    }
+    
+    public Object visitBoolLiteral(BoolLiteral ast, Object o) {
         return null;
     }
 

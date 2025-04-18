@@ -1,0 +1,12 @@
+let
+  var x : Boolean
+in
+  begin
+    x := true;
+    if x then
+      put('T')
+    else
+      put('F')
+  end
+
+
