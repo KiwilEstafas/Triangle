@@ -11,6 +11,8 @@ import Triangle.AbstractSyntaxTrees.ArrayTypeDenoter;
 import Triangle.AbstractSyntaxTrees.AssignCommand;
 import Triangle.AbstractSyntaxTrees.BinaryExpression;
 import Triangle.AbstractSyntaxTrees.BinaryOperatorDeclaration;
+import Triangle.AbstractSyntaxTrees.BoolExpression;
+import Triangle.AbstractSyntaxTrees.BoolLiteral;
 import Triangle.AbstractSyntaxTrees.BoolTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CallCommand;
 import Triangle.AbstractSyntaxTrees.CallExpression;
@@ -138,6 +140,10 @@ public class TreeVisitor implements Visitor {
     
     public Object visitCharacterExpression(CharacterExpression ast, Object obj) {
         return(createUnary("Character Expression", ast.CL));
+    }
+    
+    public Object visitBoolExpression(BoolExpression ast, Object obj) {
+        return(createUnary("Boolean Expression", ast.BL));
     }
     
     public Object visitEmptyExpression(EmptyExpression ast, Object obj) {
@@ -330,6 +336,10 @@ public class TreeVisitor implements Visitor {
     // <editor-fold defaultstate="collapsed" desc=" Literals, Identifiers and Operators ">
     // Literals, Identifiers and Operators
     public Object visitCharacterLiteral(CharacterLiteral ast, Object obj) {
+        return(createNullary(ast.spelling));
+    }
+    
+    public Object visitBoolLiteral(BoolLiteral ast, Object obj) {
         return(createNullary(ast.spelling));
     }
     

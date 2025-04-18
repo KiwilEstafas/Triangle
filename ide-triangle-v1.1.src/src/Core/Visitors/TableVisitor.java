@@ -11,6 +11,8 @@ import Triangle.AbstractSyntaxTrees.ArrayTypeDenoter;
 import Triangle.AbstractSyntaxTrees.AssignCommand;
 import Triangle.AbstractSyntaxTrees.BinaryExpression;
 import Triangle.AbstractSyntaxTrees.BinaryOperatorDeclaration;
+import Triangle.AbstractSyntaxTrees.BoolExpression;
+import Triangle.AbstractSyntaxTrees.BoolLiteral;
 import Triangle.AbstractSyntaxTrees.BoolTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CallCommand;
 import Triangle.AbstractSyntaxTrees.CallExpression;
@@ -176,6 +178,12 @@ public class TableVisitor implements Visitor {
   
   public Object visitCharacterExpression(CharacterExpression ast, Object o) { 
       ast.CL.visit(this, null);
+      
+      return(null);
+  }
+  
+    public Object visitBoolExpression(BoolExpression ast, Object o) { 
+      ast.BL.visit(this, null);
       
       return(null);
   }
@@ -546,6 +554,10 @@ public class TableVisitor implements Visitor {
   // <editor-fold defaultstate="collapsed" desc=" Literals, Identifiers and Operators ">
   // Literals, Identifiers and Operators
   public Object visitCharacterLiteral(CharacterLiteral ast, Object o) {   
+      return(null);
+  }
+  
+    public Object visitBoolLiteral(BoolLiteral ast, Object o) {   
       return(null);
   }
   
