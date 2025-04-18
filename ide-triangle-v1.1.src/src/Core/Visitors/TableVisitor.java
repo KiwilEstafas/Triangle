@@ -68,6 +68,7 @@ import Triangle.AbstractSyntaxTrees.VarFormalParameter;
 import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.VnameExpression;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
+import Triangle.AbstractSyntaxTrees.ForCommand;
 import Triangle.CodeGenerator.Field;
 import Triangle.CodeGenerator.KnownAddress;
 import Triangle.CodeGenerator.KnownRoutine;
@@ -138,6 +139,14 @@ public class TableVisitor implements Visitor {
       ast.E.visit(this, null);
       ast.C.visit(this, null);
       
+      return(null);
+  }
+  
+  public Object visitForCommand(ForCommand ast, Object o){
+      ast.V.visit(this,null);
+      ast.E1.visit(this,null);
+      ast.E2.visit(this,null);
+      ast.C.visit(this,null);
       return(null);
   }
   // </editor-fold>

@@ -68,6 +68,7 @@ import Triangle.AbstractSyntaxTrees.VarFormalParameter;
 import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.VnameExpression;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
+import Triangle.AbstractSyntaxTrees.ForCommand;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
@@ -114,6 +115,10 @@ public class TreeVisitor implements Visitor {
     
     public Object visitWhileCommand(WhileCommand ast, Object obj) {
         return(createBinary("While Command", ast.E, ast.C));
+    }
+    
+    public Object visitForCommand(ForCommand ast, Object obj){
+        return(createQuaternary("For Command",ast.V, ast.E1, ast.E2,ast.C));
     }
     // </editor-fold>
     
