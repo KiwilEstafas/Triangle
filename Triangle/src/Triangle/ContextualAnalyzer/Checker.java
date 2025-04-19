@@ -26,8 +26,8 @@ public final class Checker implements Visitor {
     // Commands
     // Always returns null. Does not use the given object.
     public Object visitAssignCommand(AssignCommand ast, Object o) {
-        TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
-        TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+        TypeDenoter vType = (TypeDenoter) ast.V.visit(this, o);
+        TypeDenoter eType = (TypeDenoter) ast.E.visit(this, o);
         if (!ast.V.variable) {
             reporter.reportError("LHS of assignment is not a variable", "", ast.V.position);
         }
@@ -69,15 +69,15 @@ public final class Checker implements Visitor {
 
     public Object visitLetCommand(LetCommand ast, Object o) {
         idTable.openScope();
-        ast.D.visit(this, null);
-        ast.C.visit(this, null);
+        ast.D.visit(this, o);
+        ast.C.visit(this, o);
         idTable.closeScope();
         return null;
     }
 
     public Object visitSequentialCommand(SequentialCommand ast, Object o) {
-        ast.C1.visit(this, null);
-        ast.C2.visit(this, null);
+        ast.C1.visit(this, o);
+        ast.C2.visit(this, o);
         return null;
     }
 
@@ -120,7 +120,53 @@ public final class Checker implements Visitor {
     return null;
 }
 
+/**
+ * 
+ * @param ast
+ * @param o
+ * @return null
+ * Verifica que el tipo de expresion sea o un numero o un booleano y revisa
+ * case por case validando que sus tipos tambien sean validos
+ */
+   
+    public Object visitMatchCommand(MatchCommand ast, Object o) {
+        TypeDenoter exprType = (TypeDenoter) ast.E.visit(this, o);
 
+        if (!(exprType.equals(StdEnvironment.booleanType) || exprType.equals(StdEnvironment.integerType))) {
+            reporter.reportError("Type of match expression must be Integer or Boolean", "", ast.position);
+        }
+
+        for (Case cb : ast.cases) {
+            cb.visit(this, exprType);
+        }
+
+        if (ast.COther != null) {
+            ast.COther.visit(this, o); 
+        }
+
+        return null;
+    }
+
+/**
+ * 
+ * @param ast
+ * @param o
+ * @return null
+ * Revisa el tipo de dato de los cases (int o bool) sean los mismos que el match
+ * (Que hablen el mismo idioma) y de paso verifica el comando del case
+ * para validar que tambien sea valido. 
+ */
+    public Object visitCase(Case ast, Object o) {
+        for (Terminal e : ast.constants) {
+            TypeDenoter t = (TypeDenoter) e.visit(this, o);
+            if (!t.equals(o)) {
+                reporter.reportError("Case constant type does not match match expression type", "", e.position);
+            }
+        }
+
+        ast.command.visit(this, o); // el comando del case
+        return null;
+    }
 
     // Expressions
     // Returns the TypeDenoter denoting the type of the expression. Does
@@ -135,9 +181,9 @@ public final class Checker implements Visitor {
 
     public Object visitBinaryExpression(BinaryExpression ast, Object o) {
 
-        TypeDenoter e1Type = (TypeDenoter) ast.E1.visit(this, null);
-        TypeDenoter e2Type = (TypeDenoter) ast.E2.visit(this, null);
-        Declaration binding = (Declaration) ast.O.visit(this, null);
+        TypeDenoter e1Type = (TypeDenoter) ast.E1.visit(this, o);
+        TypeDenoter e2Type = (TypeDenoter) ast.E2.visit(this, o);
+        Declaration binding = (Declaration) ast.O.visit(this, o);
 
         if (binding == null) {
             reportUndeclared(ast.O);
@@ -253,7 +299,7 @@ public final class Checker implements Visitor {
     }
 
     public Object visitVnameExpression(VnameExpression ast, Object o) {
-        ast.type = (TypeDenoter) ast.V.visit(this, null);
+        ast.type = (TypeDenoter) ast.V.visit(this, o);
         return ast.type;
     }
 
@@ -325,13 +371,13 @@ public final class Checker implements Visitor {
     }
 
     public Object visitVarDeclaration(VarDeclaration ast, Object o) {
-        ast.T = (TypeDenoter) ast.T.visit(this, null);
+        ast.T = (TypeDenoter) ast.T.visit(this, o);
         idTable.enter(ast.I.spelling, ast);
         if (ast.duplicated) {
             reporter.reportError("identifier \"%\" already declared",
                     ast.I.spelling, ast.position);
         }
-
+        
         return null;
     }
 
@@ -589,7 +635,7 @@ public final class Checker implements Visitor {
     }
 
     public Object visitSimpleTypeDenoter(SimpleTypeDenoter ast, Object o) {
-        Declaration binding = (Declaration) ast.I.visit(this, null);
+        Declaration binding = (Declaration) ast.I.visit(this, o);
         if (binding == null) {
             reportUndeclared(ast.I);
             return StdEnvironment.errorType;
@@ -687,7 +733,7 @@ public final class Checker implements Visitor {
     public Object visitSimpleVname(SimpleVname ast, Object o) {
         ast.variable = false;
         ast.type = StdEnvironment.errorType;
-        Declaration binding = (Declaration) ast.I.visit(this, null);
+        Declaration binding = (Declaration) ast.I.visit(this, o);
         if (binding == null) {
             reportUndeclared(ast.I);
         } else if (binding instanceof ConstDeclaration) {
@@ -729,7 +775,7 @@ public final class Checker implements Visitor {
 
     // Programs
     public Object visitProgram(Program ast, Object o) {
-        ast.C.visit(this, null);
+        ast.C.visit(this, o);
         return null;
     }
 

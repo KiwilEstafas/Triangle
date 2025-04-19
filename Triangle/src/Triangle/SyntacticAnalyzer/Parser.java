@@ -18,6 +18,8 @@ import java.util.LinkedHashMap;
 
 import Triangle.ErrorReporter;
 import Triangle.AbstractSyntaxTrees.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Parser {
 
@@ -71,6 +73,56 @@ public class Parser {
     errorReporter.reportError(messageTemplate, tokenQuoted, pos);
     throw(new SyntaxError());
   }
+  
+  //Metodos privados implementados para usarlos al parsear el match
+  
+   /**
+    * 
+    * @return una lista de terminales que pueden ser tipo booleano o tipo int
+    * @throws SyntaxError 
+    * Este metodo se encarga de separar los terminales por coma en el caso de
+    * que un case tenga varios valores asignados al mismo comando
+    */
+    private List<Terminal> parseConstantList() throws SyntaxError {
+        List<Terminal> terminals = new ArrayList<>();
+        terminals.add(parseTerminal());
+
+        while (currentToken.kind == Token.COMMA) {
+            accept(Token.COMMA);
+            terminals.add(parseTerminal());
+        }
+
+        return terminals;
+    }
+
+    /**
+     * 
+     * @return el tipo (int o bool) que le corresponde a cada terminal
+     * @throws SyntaxError 
+     * Analiza que los terminales correspondan a booleanos o integers
+     * y los clasifica, ademas que revisa que no sean de ningun otro tipo
+     */
+    private Terminal parseTerminal() throws SyntaxError {
+        SourcePosition pos = new SourcePosition();
+        start(pos);
+
+        switch (currentToken.kind) {
+            case Token.INTLITERAL:
+                String intVal = currentToken.spelling;
+                accept(Token.INTLITERAL);
+                return new IntegerLiteral(intVal, pos);
+
+            case Token.TRUE:
+            case Token.FALSE:
+                String boolVal = currentToken.spelling;
+                acceptIt();
+                return new BoolLiteral(boolVal, pos);
+
+            default:
+                syntacticError("Expected a literal (integer or boolean)", currentToken.spelling);
+                return null;
+        }
+    }
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -241,7 +293,8 @@ public class Parser {
         acceptIt();
         Declaration dAST = parseDeclaration();
         accept(Token.IN);
-        Command cAST = parseSingleCommand();
+        Command cAST = parseCommand(); 
+        //Se cambio a parseCommand para que pueda analizar el match dentro del let
         finish(commandPos);
         commandAST = new LetCommand(dAST, cAST, commandPos);
       }
@@ -273,7 +326,6 @@ public class Parser {
       
     case Token.FOR:
       {
-        System.out.println("ENtra For");
         acceptIt();
         Vname vAST = parseVname();
         accept(Token.BECOMES);
@@ -301,6 +353,41 @@ public class Parser {
         commandAST = new ForCommand(vAST, e1AST, e2AST,cAST,isDownto,commandPos);
       }
       break;
+      
+    case Token.MATCH: {
+                acceptIt();
+                accept(Token.LPAREN); //debe de venir con parentesis si o si, incluso si solo es una variable.
+                Expression eAST = parseExpression();
+                accept(Token.RPAREN);
+                accept(Token.OF);
+
+                List<Case> caseList = new ArrayList<>();
+                SourcePosition casePos = new SourcePosition();
+
+                //Recorre case por case
+                while (currentToken.kind == Token.CASE) {
+                    accept(Token.CASE);
+                    List<Terminal> constList = parseConstantList();
+                    accept(Token.COLON);
+                    Command cAST = parseSingleCommand();
+                    finish(casePos);
+                    //añade la lista del case(nombres y comandos) a una lista con todos los cases
+                    caseList.add(new Case(constList, cAST,casePos));
+                }
+
+                //Verifica si tiene otherwise o no 
+                Command otherwise = null;
+                if (currentToken.kind == Token.OTHERWISE) {
+                    accept(Token.OTHERWISE);
+                    accept(Token.COLON);
+                    otherwise = parseSingleCommand();
+                }
+
+                accept(Token.END);
+                finish(commandPos);
+                commandAST = new MatchCommand(eAST, caseList, otherwise, commandPos);
+            }
+            break;
 
     case Token.SEMICOLON:
     case Token.END:

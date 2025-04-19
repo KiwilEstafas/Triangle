@@ -71,6 +71,7 @@ import Triangle.AbstractSyntaxTrees.ProcFormalParameter;
 import Triangle.AbstractSyntaxTrees.Program;
 import Triangle.AbstractSyntaxTrees.RecordExpression;
 import Triangle.AbstractSyntaxTrees.BoolExpression;
+import Triangle.AbstractSyntaxTrees.Case;
 import Triangle.AbstractSyntaxTrees.RecordTypeDenoter;
 import Triangle.AbstractSyntaxTrees.SequentialCommand;
 import Triangle.AbstractSyntaxTrees.SequentialDeclaration;
@@ -93,6 +94,10 @@ import Triangle.AbstractSyntaxTrees.Vname;
 import Triangle.AbstractSyntaxTrees.VnameExpression;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
 import Triangle.AbstractSyntaxTrees.ForCommand;
+import Triangle.AbstractSyntaxTrees.MatchCommand;
+import Triangle.AbstractSyntaxTrees.Terminal;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class Encoder implements Visitor {
 
@@ -206,8 +211,42 @@ public Object visitForCommand(ForCommand ast, Object o) {
     return null;
 }
 
+/**
+ * 
+ * @param ast
+ * @param o
+ * @return 
+ * no funciona, no evalua bien los casos y si es verdad pasa por todos los case
+ * creo que seria mejor separar el visitMatch y Visit case para que los 
+ * analice por partes, pero no se como todavia
+ */
+public Object visitMatchCommand(MatchCommand ast, Object o) {
+        Frame frame = (Frame) o;
+        int jumpifAddr, jumpAddr;
 
+        Integer valSize = (Integer) ast.E.visit(this, frame);
+        jumpifAddr = nextInstrAddr;
+        
+        for (Case caseClause : ast.cases){
+            for(Terminal constant : caseClause.constants){
+                emit(Machine.JUMPIFop,Machine.falseRep,Machine.CBr,0);
+            }
+        caseClause.command.visit(this, frame);
+        jumpAddr = nextInstrAddr;
+        emit(Machine.JUMPop,0,Machine.CBr,0);
+        patch(jumpifAddr,nextInstrAddr);
+        patch(jumpAddr,nextInstrAddr);
+        
+        }
+        if(ast.COther != null){
+            ast.COther.visit(this, frame);
+        }
+        return null;
+    }
 
+public Object visitCase(Case ast, Object o) {
+    return null;
+}
 
 
     // Expressions

@@ -83,6 +83,8 @@ import Triangle.AbstractSyntaxTrees.VnameExpression;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
 import Triangle.AbstractSyntaxTrees.ForCommand;
 import Triangle.AbstractSyntaxTrees.BoolLiteral;
+import Triangle.AbstractSyntaxTrees.Case;
+import Triangle.AbstractSyntaxTrees.MatchCommand;
 
 public class LayoutVisitor implements Visitor {
 
@@ -128,6 +130,14 @@ public class LayoutVisitor implements Visitor {
   public Object visitForCommand(ForCommand ast, Object obj){
       return layoutQuaternary("ForCom.", ast.V, ast.E1, ast.E2,ast.C);
   }
+      
+  public Object visitMatchCommand(MatchCommand ast, Object obj){
+        return layoutBinary("MatcgCom.", ast.E, ast.COther);
+    }
+  
+  public Object visitCase(Case ast, Object o) {
+        return layoutUnary("Case", ast.command);
+    }
   // Expressions
   public Object visitArrayExpression(ArrayExpression ast, Object obj) {
     return layoutUnary("ArrayExpr.", ast.AA);
