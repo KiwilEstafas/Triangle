@@ -16,6 +16,7 @@ import Triangle.AbstractSyntaxTrees.BoolLiteral;
 import Triangle.AbstractSyntaxTrees.BoolTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CallCommand;
 import Triangle.AbstractSyntaxTrees.CallExpression;
+import Triangle.AbstractSyntaxTrees.Case;
 import Triangle.AbstractSyntaxTrees.CharTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CharacterExpression;
 import Triangle.AbstractSyntaxTrees.CharacterLiteral;
@@ -71,6 +72,9 @@ import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.VnameExpression;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
 import Triangle.AbstractSyntaxTrees.ForCommand;
+import Triangle.AbstractSyntaxTrees.MatchCommand;
+import Triangle.AbstractSyntaxTrees.RepeatCommand;
+import Triangle.AbstractSyntaxTrees.UntilCommand;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
@@ -452,4 +456,20 @@ public class TreeVisitor implements Visitor {
         return(t);             
     }
     // </editor-fold>
+  
+    public Object visitRepeatCommand(RepeatCommand ast, Object obj) {
+        return(createBinary("RepeatCommand", ast.C, ast.E));
+    }
+
+    public Object visitUntilCommand(UntilCommand ast, Object obj) {
+        return (createBinary("UntilCommand", ast.C, ast.E));
+    }
+
+  public Object visitMatchCommand(MatchCommand ast, Object obj){
+        return (createBinary("MatcgCom.", ast.E, ast.COther));
+    }
+
+  public Object visitCase(Case ast, Object o) {
+        return (createUnary("Case", ast.command));
+    }
 }

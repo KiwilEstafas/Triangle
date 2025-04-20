@@ -148,6 +148,7 @@ public class LayoutVisitor implements Visitor {
   public Object visitCase(Case ast, Object o) {
         return layoutUnary("Case", ast.command);
     }
+  
   // Expressions
   public Object visitArrayExpression(ArrayExpression ast, Object obj) {
     return layoutUnary("ArrayExpr.", ast.AA);

@@ -16,6 +16,7 @@ import Triangle.AbstractSyntaxTrees.BoolLiteral;
 import Triangle.AbstractSyntaxTrees.BoolTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CallCommand;
 import Triangle.AbstractSyntaxTrees.CallExpression;
+import Triangle.AbstractSyntaxTrees.Case;
 import Triangle.AbstractSyntaxTrees.CharTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CharacterExpression;
 import Triangle.AbstractSyntaxTrees.CharacterLiteral;
@@ -71,6 +72,9 @@ import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.VnameExpression;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
 import Triangle.AbstractSyntaxTrees.ForCommand;
+import Triangle.AbstractSyntaxTrees.MatchCommand;
+import Triangle.AbstractSyntaxTrees.RepeatCommand;
+import Triangle.AbstractSyntaxTrees.UntilCommand;
 import Triangle.CodeGenerator.Field;
 import Triangle.CodeGenerator.KnownAddress;
 import Triangle.CodeGenerator.KnownRoutine;
@@ -643,4 +647,27 @@ public class TableVisitor implements Visitor {
   // <editor-fold defaultstate="collapsed" desc=" Attributes ">
     private DefaultTableModel model;
     // </editor-fold>
+
+    public Object visitRepeatCommand(RepeatCommand ast, Object o) {
+      ast.E.visit(this, null);
+      ast.C.visit(this, null);
+      
+      return(null);
+    }
+
+    public Object visitUntilCommand(UntilCommand ast, Object o) {
+      ast.E.visit(this, null);
+      ast.C.visit(this, null);
+      
+      return(null);
+    }
+
+
+    public Object visitMatchCommand(MatchCommand ast, Object o) {
+        return(null);
+    }
+
+    public Object visitCase(Case ast, Object o) {
+        return(null);
+    }
 }
