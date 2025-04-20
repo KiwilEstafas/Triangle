@@ -119,7 +119,28 @@ public final class Checker implements Visitor {
     ast.C.visit(this, null);
     return null;
 }
+   
+public Object visitRepeatCommand(RepeatCommand ast, Object o) {
+    ast.C.visit(this, null);
+    TypeDenoter condType = (TypeDenoter) ast.E.visit(this, null);
 
+    if (!condType.equals(StdEnvironment.booleanType)) {
+        reporter.reportError("Repeat condition must be of type Boolean", "", ast.E.position);
+    }
+
+    return null;
+}
+
+public Object visitUntilCommand(UntilCommand ast, Object o) {
+    TypeDenoter condType = (TypeDenoter) ast.E.visit(this, null);
+    if (!condType.equals(StdEnvironment.booleanType)) {
+        reporter.reportError("Until condition must be of type Boolean", "", ast.E.position);
+    }
+
+    ast.C.visit(this, null);
+    return null;
+}
+  
 /**
  * 
  * @param ast

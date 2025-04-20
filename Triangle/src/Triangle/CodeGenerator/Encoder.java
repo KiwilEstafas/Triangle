@@ -94,6 +94,8 @@ import Triangle.AbstractSyntaxTrees.Vname;
 import Triangle.AbstractSyntaxTrees.VnameExpression;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
 import Triangle.AbstractSyntaxTrees.ForCommand;
+import Triangle.AbstractSyntaxTrees.RepeatCommand;
+import Triangle.AbstractSyntaxTrees.UntilCommand;
 import Triangle.AbstractSyntaxTrees.MatchCommand;
 import Triangle.AbstractSyntaxTrees.Terminal;
 import java.util.ArrayList;
@@ -208,6 +210,28 @@ public Object visitForCommand(ForCommand ast, Object o) {
 
     emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, loopStartAddr);
     patch(jumpToCondAddr, conditionAddr);
+    return null;
+}
+
+public Object visitRepeatCommand(RepeatCommand ast, Object o) {
+    Frame frame = (Frame) o;
+
+    int startAddr = nextInstrAddr;         // Inicio del ciclo
+    ast.C.visit(this, frame);              // Ejecuta cuerpo
+    ast.E.visit(this, frame);              // Evalúa condición "until"
+    emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, startAddr); // Repite si FALSE
+
+    return null;
+}
+
+public Object visitUntilCommand(UntilCommand ast, Object o) {
+    Frame frame = (Frame) o;
+
+    int startAddr = nextInstrAddr;         // Inicio del ciclo
+    ast.C.visit(this, frame);              // Ejecuta cuerpo
+    ast.E.visit(this, frame);              // Evalúa condición "until"
+    emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, startAddr); // Repite si FALSE
+
     return null;
 }
 

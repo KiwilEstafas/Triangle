@@ -82,6 +82,8 @@ import Triangle.AbstractSyntaxTrees.Visitor;
 import Triangle.AbstractSyntaxTrees.VnameExpression;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
 import Triangle.AbstractSyntaxTrees.ForCommand;
+import Triangle.AbstractSyntaxTrees.RepeatCommand;
+import Triangle.AbstractSyntaxTrees.UntilCommand;
 import Triangle.AbstractSyntaxTrees.BoolLiteral;
 import Triangle.AbstractSyntaxTrees.Case;
 import Triangle.AbstractSyntaxTrees.MatchCommand;
@@ -130,7 +132,15 @@ public class LayoutVisitor implements Visitor {
   public Object visitForCommand(ForCommand ast, Object obj){
       return layoutQuaternary("ForCom.", ast.V, ast.E1, ast.E2,ast.C);
   }
-      
+  
+    public Object visitRepeatCommand(RepeatCommand ast, Object obj) {
+        return layoutBinary("RepeatCommand", ast.C, ast.E);
+    }
+
+    public Object visitUntilCommand(UntilCommand ast, Object obj) {
+        return layoutBinary("UntilCommand", ast.C, ast.E);
+    }
+
   public Object visitMatchCommand(MatchCommand ast, Object obj){
         return layoutBinary("MatcgCom.", ast.E, ast.COther);
     }

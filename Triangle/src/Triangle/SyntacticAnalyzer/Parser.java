@@ -354,6 +354,28 @@ public class Parser {
       }
       break;
       
+    case Token.REPEAT:
+    {
+        acceptIt(); // consume 'repeat'
+        Command cAST = parseSingleCommand(); // bloque a repetir
+        accept(Token.UNTIL); // consume 'until'
+        Expression eAST = parseExpression(); // condición booleana
+        finish(commandPos); // finaliza el posicionamiento
+        commandAST = new RepeatCommand(cAST, eAST, commandPos); // construye el nodo AST
+    }
+    break;    
+    
+    case Token.UNTIL:
+    {
+       acceptIt(); // consume 'until'
+       Expression eAST = parseExpression(); // la condición
+       accept(Token.DO); // consume 'do'
+       Command cAST = parseSingleCommand(); // el bloque que se ejecuta mientras no se cumpla
+       finish(commandPos);
+       commandAST = new UntilCommand(cAST, eAST, commandPos);
+    }
+    break;
+      
     case Token.MATCH: {
                 acceptIt();
                 accept(Token.LPAREN); //debe de venir con parentesis si o si, incluso si solo es una variable.

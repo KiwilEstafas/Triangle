@@ -25,6 +25,8 @@ public interface Visitor {
   public abstract Object visitSequentialCommand(SequentialCommand ast, Object o);
   public abstract Object visitWhileCommand(WhileCommand ast, Object o);
   public abstract Object visitForCommand(ForCommand ast, Object o);
+  public abstract Object visitRepeatCommand(RepeatCommand ast, Object o);
+  public Object visitUntilCommand(UntilCommand ast, Object o);
   public Object visitMatchCommand(MatchCommand ast, Object o);
   public Object visitCase(Case ast, Object o);
 

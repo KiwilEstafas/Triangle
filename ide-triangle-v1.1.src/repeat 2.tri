@@ -1,0 +1,11 @@
+let
+  var i : Integer
+in
+  begin
+    i := 0;
+    until i = 5 do
+      begin
+        putint(i);
+        i := i + 1
+      end
+  end
