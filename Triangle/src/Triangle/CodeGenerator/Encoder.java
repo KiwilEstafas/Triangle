@@ -245,28 +245,47 @@ public Object visitUntilCommand(UntilCommand ast, Object o) {
  * analice por partes, pero no se como todavia
  */
 public Object visitMatchCommand(MatchCommand ast, Object o) {
-        Frame frame = (Frame) o;
-        int jumpifAddr, jumpAddr;
+    int matchValueRegister = machine.getNewRegister();
+    
+    // Evaluar la expresión base
+    ast.E.visit(this, o);
+    machine.emit(Op.LOAD, matchValueRegister);
 
-        Integer valSize = (Integer) ast.E.visit(this, frame);
-        jumpifAddr = nextInstrAddr;
-        
-        for (Case caseClause : ast.cases){
-            for(Terminal constant : caseClause.constants){
-                emit(Machine.JUMPIFop,Machine.falseRep,Machine.CBr,0);
-            }
-        caseClause.command.visit(this, frame);
-        jumpAddr = nextInstrAddr;
-        emit(Machine.JUMPop,0,Machine.CBr,0);
-        patch(jumpifAddr,nextInstrAddr);
-        patch(jumpAddr,nextInstrAddr);
-        
+    List<Integer> jumpTargets = new ArrayList<>();
+    boolean hasOtherwise = ast.COther != null;
+
+    for (Case c : ast.cases) {
+        for (Terminal constant : c.constants) {
+            constant.visit(this, o); // cargar constante
+            machine.emit(Op.LOAD, 0);
+            machine.emit(Op.CMP, matchValueRegister, 0);
+            // salto condicional si son iguales
+            int jumpIfEqualAddr = machine.emit(Op.JUMPIF, Address.UNRESOLVED);
+            jumpTargets.add(jumpIfEqualAddr);
         }
-        if(ast.COther != null){
-            ast.COther.visit(this, frame);
-        }
-        return null;
     }
+
+    // Jump to otherwise si existe
+    int otherwiseJumpAddr = -1;
+    if (hasOtherwise) {
+        otherwiseJumpAddr = machine.emit(Op.JUMP, Address.UNRESOLVED);
+    }
+
+    // Escribir los comandos de cada case y resolver los saltos
+    for (int i = 0; i < ast.cases.size(); i++) {
+        Case c = ast.cases.get(i);
+        machine.resolve(jumpTargets.get(i), machine.nextInstrAddr());
+        c.command.visit(this, o);
+        machine.emit(Op.JUMP, Address.RESOLVE_LATER); // salto al final
+    }
+
+    if (hasOtherwise) {
+        machine.resolve(otherwiseJumpAddr, machine.nextInstrAddr());
+        ast.COther.visit(this, o);
+    }
+
+    return null;
+}
 
 public Object visitCase(Case ast, Object o) {
     return null;
