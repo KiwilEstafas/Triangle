@@ -28,7 +28,7 @@ public interface Visitor {
   public abstract Object visitRepeatCommand(RepeatCommand ast, Object o);
   public Object visitUntilCommand(UntilCommand ast, Object o);
   public Object visitMatchCommand(MatchCommand ast, Object o);
-  public Object visitCase(Case ast, Object o);
+  public Object visitCase(CaseCommand ast, Object o);
 
 
   // Expressions
@@ -44,6 +44,8 @@ public interface Visitor {
   public abstract Object visitRecordExpression(RecordExpression ast, Object o);
   public abstract Object visitUnaryExpression(UnaryExpression ast, Object o);
   public abstract Object visitVnameExpression(VnameExpression ast, Object o);
+  public abstract Object visitMatchExpression(MatchExpression ast, Object o);
+  public abstract Object visitCaseExpression(CaseExpression ast, Object o);
 
   // Declarations
   public abstract Object visitBinaryOperatorDeclaration(BinaryOperatorDeclaration ast, Object o);

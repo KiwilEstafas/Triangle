@@ -71,7 +71,8 @@ import Triangle.AbstractSyntaxTrees.ProcFormalParameter;
 import Triangle.AbstractSyntaxTrees.Program;
 import Triangle.AbstractSyntaxTrees.RecordExpression;
 import Triangle.AbstractSyntaxTrees.BoolExpression;
-import Triangle.AbstractSyntaxTrees.Case;
+import Triangle.AbstractSyntaxTrees.CaseCommand;
+import Triangle.AbstractSyntaxTrees.CaseExpression;
 import Triangle.AbstractSyntaxTrees.Expression;
 import Triangle.AbstractSyntaxTrees.RecordTypeDenoter;
 import Triangle.AbstractSyntaxTrees.SequentialCommand;
@@ -98,6 +99,7 @@ import Triangle.AbstractSyntaxTrees.ForCommand;
 import Triangle.AbstractSyntaxTrees.RepeatCommand;
 import Triangle.AbstractSyntaxTrees.UntilCommand;
 import Triangle.AbstractSyntaxTrees.MatchCommand;
+import Triangle.AbstractSyntaxTrees.MatchExpression;
 import Triangle.AbstractSyntaxTrees.Terminal;
 import java.util.ArrayList;
 import java.util.List;
@@ -253,7 +255,7 @@ public Object visitMatchCommand(MatchCommand ast, Object o) {
 
     List<Integer> jumpsToEnd = new ArrayList<>(); // Guardar direcciones de saltos al final
 
-    for (Case caseNode : ast.cases) {
+    for (CaseCommand caseNode : ast.cases) {
         int nextCaseJumpAddr;
 
         for (Expression constant : caseNode.constants) {
@@ -308,7 +310,7 @@ public Object visitMatchCommand(MatchCommand ast, Object o) {
 }
 
 
-public Object visitCase(Case ast, Object o) {
+    public Object visitCase(CaseCommand ast, Object o) {
     return null; }
 
     // Expressions
@@ -413,6 +415,20 @@ public Object visitCase(Case ast, Object o) {
         Integer valSize = (Integer) ast.type.visit(this, null);
         encodeFetch(ast.V, frame, valSize.intValue());
         return valSize;
+    }
+    
+    /**
+     * PENDIENTES POR HACER!!!!!!!!!!!!!!!
+     * @param ast
+     * @param o
+     * @return 
+     */
+    public Object visitMatchExpression(MatchExpression ast, Object o){
+        return null;
+    }
+    
+    public Object visitCaseExpression(CaseExpression ast, Object o){
+        return null; 
     }
 
     // Declarations

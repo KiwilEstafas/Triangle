@@ -1,0 +1,11 @@
+let
+    var n: Integer;
+    var result: Integer; 
+    func example(n: Integer) : Integer ~
+        match (n < 3) of
+            case true: 1
+            otherwise: 0
+        end
+in
+    n := 2;
+    result := example(n)

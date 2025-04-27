@@ -325,7 +325,7 @@ public class Parser {
       break;
       
     case Token.FOR:
-      {
+      { Expression eAST = parseExpression();
         acceptIt();
         Vname vAST = parseVname();
         accept(Token.BECOMES);
@@ -376,40 +376,39 @@ public class Parser {
     }
     break;
       
-    case Token.MATCH: {
-                acceptIt();
-                accept(Token.LPAREN); //debe de venir con parentesis si o si, incluso si solo es una variable.
-                Expression eAST = parseExpression();
-                accept(Token.RPAREN);
-                accept(Token.OF);
+        case Token.MATCH: {
+            acceptIt();  // Acepta el MATCH
+            accept(Token.LPAREN); // Acepta '('
+            Expression eAST = parseExpression();  // La expresión que se evalúa en el MATCH
+            accept(Token.RPAREN);  // Acepta ')'
+            accept(Token.OF);  // Acepta 'OF'
 
-                List<Case> caseList = new ArrayList<>();
-                SourcePosition casePos = new SourcePosition();
+            List<CaseCommand> caseList = new ArrayList<>();
+            SourcePosition casePos = new SourcePosition();
 
-                //Recorre case por case
-                while (currentToken.kind == Token.CASE) {
-                    accept(Token.CASE);
-                    List<Expression> constList = parseConstantList();
-                    accept(Token.COLON);
-                    Command cAST = parseSingleCommand();
-                    finish(casePos);
-                    //añade la lista del case(nombres y comandos) a una lista con todos los cases
-                    caseList.add(new Case(constList, cAST,casePos));
-                }
-
-                //Verifica si tiene otherwise o no 
-                Command otherwise = null;
-                if (currentToken.kind == Token.OTHERWISE) {
-                    accept(Token.OTHERWISE);
-                    accept(Token.COLON);
-                    otherwise = parseSingleCommand();
-                }
-
-                accept(Token.END);
-                finish(commandPos);
-                commandAST = new MatchCommand(eAST, caseList, otherwise, commandPos);
+            // Recorre los CASE
+            while (currentToken.kind == Token.CASE) {
+                accept(Token.CASE);  // Acepta el token CASE
+                List<Expression> constList = parseConstantList(); // La lista de constantes para este CASE
+                accept(Token.COLON);  // Acepta el ':'
+                Command cAST = parseSingleCommand();  // El comando que se ejecutará en este caso
+                finish(casePos);
+                caseList.add(new CaseCommand(constList, cAST, casePos));  // Añade el case
             }
-            break;
+
+            // Verifica si hay OTHERWISE
+            Command otherwise = null;
+            if (currentToken.kind == Token.OTHERWISE) {
+                accept(Token.OTHERWISE);  // Acepta el token OTHERWISE
+                accept(Token.COLON);  // Acepta el ':'
+                otherwise = parseSingleCommand();  // El comando del OTHERWISE
+            }
+
+            accept(Token.END);  // Acepta el 'END'
+            finish(commandPos);  // Finaliza la posición del comando
+            commandAST = new MatchCommand(eAST, caseList, otherwise, commandPos);  // Crea el comando Match
+        }
+        break;
 
     case Token.SEMICOLON:
     case Token.END:
@@ -469,6 +468,48 @@ public class Parser {
         expressionAST = new IfExpression(e1AST, e2AST, e3AST, expressionPos);
       }
       break;
+      
+    case Token.MATCH:
+            {
+                acceptIt();  // Acepta el MATCH
+                accept(Token.LPAREN); // Acepta '('
+                Expression eAST = parseExpression();  // La expresión que se evalúa en el MATCH
+                accept(Token.RPAREN);  // Acepta ')'
+                accept(Token.OF);  // Acepta 'OF'
+
+                List<CaseExpression> cases = new ArrayList<>();
+                SourcePosition casePos = new SourcePosition();
+
+                // Procesa todos los casos
+                while (currentToken.kind == Token.CASE) {
+                    accept(Token.CASE);  // Acepta el token CASE
+                    List<Expression> constList = new ArrayList<>();
+                    constList.add(parseExpression());
+
+                    while (currentToken.kind == Token.COMMA) {
+                        acceptIt();
+                        constList.add(parseExpression());
+                    }
+
+                    accept(Token.COLON);
+                    Expression exprAST = parseExpression();
+
+                    finish(casePos);
+                    cases.add(new CaseExpression(constList, exprAST, casePos));
+                }
+
+                Expression otherwise = null;
+                if (currentToken.kind == Token.OTHERWISE) {
+                    accept(Token.OTHERWISE);  // Acepta el token OTHERWISE
+                    accept(Token.COLON);  // Acepta el ':'
+                    otherwise = parseExpression();  // La expresión del OTHERWISE
+                }
+
+                accept(Token.END);  // Acepta el 'END'
+                finish(expressionPos);  // Finaliza la posición de la expresión
+                expressionAST = new MatchExpression(eAST, cases, otherwise, expressionPos);  // Crea la expresión Match
+            }
+            break;
 
     default:
       expressionAST = parseSecondaryExpression();

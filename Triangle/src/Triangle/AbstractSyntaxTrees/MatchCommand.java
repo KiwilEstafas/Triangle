@@ -5,7 +5,7 @@
 package Triangle.AbstractSyntaxTrees;
 import Triangle.SyntacticAnalyzer.SourcePosition;
 import Triangle.AbstractSyntaxTrees.Expression;
-import Triangle.AbstractSyntaxTrees.Case;
+import Triangle.AbstractSyntaxTrees.CaseCommand;
 import java.util.List;
 /**
  *
@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class MatchCommand extends Command {
   
-    public MatchCommand(Expression eAST, List<Case> cases, Command otherwise, SourcePosition thePosition) {
+    public MatchCommand(Expression eAST, List<CaseCommand> cases, Command otherwise, SourcePosition thePosition) {
         super(thePosition);
         E = eAST;
         this.cases = cases;
@@ -29,7 +29,7 @@ public class MatchCommand extends Command {
     }
     
     public Expression E;       // Expresion que se evalua en el match
-    public List<Case> cases;   // Lista de casos
+    public List<CaseCommand> cases;   // Lista de casos
     public Command COther;     //En el caso del command pueder ser null si no tiene Otherwise
     
 }

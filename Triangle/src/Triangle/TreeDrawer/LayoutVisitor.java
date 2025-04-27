@@ -85,8 +85,10 @@ import Triangle.AbstractSyntaxTrees.ForCommand;
 import Triangle.AbstractSyntaxTrees.RepeatCommand;
 import Triangle.AbstractSyntaxTrees.UntilCommand;
 import Triangle.AbstractSyntaxTrees.BoolLiteral;
-import Triangle.AbstractSyntaxTrees.Case;
+import Triangle.AbstractSyntaxTrees.CaseCommand;
+import Triangle.AbstractSyntaxTrees.CaseExpression;
 import Triangle.AbstractSyntaxTrees.MatchCommand;
+import Triangle.AbstractSyntaxTrees.MatchExpression;
 
 public class LayoutVisitor implements Visitor {
 
@@ -145,7 +147,7 @@ public class LayoutVisitor implements Visitor {
         return layoutBinary("MatcgCom.", ast.E, ast.COther);
     }
   
-  public Object visitCase(Case ast, Object o) {
+  public Object visitCase(CaseCommand ast, Object o) {
         return layoutUnary("Case", ast.command);
     }
   
@@ -195,6 +197,14 @@ public class LayoutVisitor implements Visitor {
 
   public Object visitVnameExpression(VnameExpression ast, Object obj) {
     return layoutUnary("VnameExpr.", ast.V);
+  }
+  
+  public Object visitMatchExpression(MatchExpression ast, Object obj){
+       return layoutBinary("MatchExp.", ast.E, ast.EOther);
+  }
+  
+  public Object visitCaseExpression(CaseExpression ast, Object obj){
+      return layoutUnary("CaseExp", ast.resultExpression);
   }
 
 

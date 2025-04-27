@@ -5,8 +5,16 @@
         <group>
             <file>file:/home/estudiante/Escritorio/Compilador%20de%20Triangle/Triangle/src/Triangle/CodeGenerator/Encoder.java</file>
             <file>file:/home/estudiante/Escritorio/Compilador%20de%20Triangle/Triangle/MatchCom.tri</file>
-            <file>file:/home/estudiante/Escritorio/Compilador%20de%20Triangle/Triangle/MatchCom2.tri</file>
             <file>file:/home/estudiante/Escritorio/Compilador%20de%20Triangle/Triangle/src/Triangle/SyntacticAnalyzer/Token.java</file>
+            <file>file:/home/estudiante/Escritorio/Compilador%20de%20Triangle/Triangle/src/TAM/Interpreter.java</file>
+            <file>file:/home/estudiante/Escritorio/Compilador%20de%20Triangle/Triangle/src/TAM/Machine.java</file>
+            <file>file:/home/estudiante/Escritorio/Compilador%20de%20Triangle/Triangle/src/Triangle/AbstractSyntaxTrees/Case.java</file>
+            <file>file:/home/estudiante/Escritorio/Compilador%20de%20Triangle/Triangle/src/Triangle/AbstractSyntaxTrees/MatchCommand.java</file>
+            <file>file:/home/estudiante/Escritorio/Compilador%20de%20Triangle/Triangle/src/Triangle/SyntacticAnalyzer/Parser.java</file>
+            <file>file:/home/estudiante/Escritorio/Compilador%20de%20Triangle/Triangle/src/Triangle/AbstractSyntaxTrees/ConstActualParameter.java</file>
+            <file>file:/home/estudiante/Escritorio/Compilador%20de%20Triangle/Triangle/src/Triangle/AbstractSyntaxTrees/UnaryExpression.java</file>
+            <file>file:/home/estudiante/Escritorio/Compilador%20de%20Triangle/Triangle/src/Triangle/ContextualAnalyzer/Checker.java</file>
+            <file>file:/home/estudiante/Escritorio/Compilador%20de%20Triangle/Triangle/true.tri</file>
         </group>
     </open-files>
 </project-private>

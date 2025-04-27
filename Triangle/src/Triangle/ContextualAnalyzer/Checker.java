@@ -157,7 +157,7 @@ public Object visitUntilCommand(UntilCommand ast, Object o) {
             reporter.reportError("Type of match expression must be Integer or Boolean", "", ast.position);
         }
 
-        for (Case cb : ast.cases) {
+        for (CaseCommand cb : ast.cases) {
             cb.visit(this, exprType);
         }
 
@@ -177,7 +177,7 @@ public Object visitUntilCommand(UntilCommand ast, Object o) {
  * (Que hablen el mismo idioma) y de paso verifica el comando del case
  * para validar que tambien sea valido. 
  */
-    public Object visitCase(Case ast, Object o) {
+    public Object visitCase(CaseCommand ast, Object o) {
         for (Expression e : ast.constants) {
             TypeDenoter t = (TypeDenoter) e.visit(this, o);
             if (!t.equals(o)) {
@@ -322,6 +322,49 @@ public Object visitUntilCommand(UntilCommand ast, Object o) {
     public Object visitVnameExpression(VnameExpression ast, Object o) {
         ast.type = (TypeDenoter) ast.V.visit(this, o);
         return ast.type;
+    }
+    
+    public Object visitMatchExpression(MatchExpression ast, Object o) {
+        TypeDenoter eType = (TypeDenoter) ast.E.visit(this, o);
+
+        if (!(eType.equals(StdEnvironment.integerType) || eType.equals(StdEnvironment.booleanType))) {
+            reporter.reportError("La expresion debe de ser tipo booleano o integer", "", ast.E.position);
+        }
+
+        TypeDenoter resultType = null; // El tipo de los resultados
+
+        // Analizar cada case
+        for (CaseExpression caseExpr : ast.cases) {
+            for (Expression constExpr : caseExpr.constExpressions) {
+                TypeDenoter constType = (TypeDenoter) constExpr.visit(this, o);
+                if (!constType.equals(eType)) {
+                    reporter.reportError("Las constantes en los case deben tener el mismo tipo que la expresión del match", "", constExpr.position);
+                }
+            }
+
+            // Verficiar el resultado 
+            TypeDenoter caseResultType = (TypeDenoter) caseExpr.resultExpression.visit(this, o);
+
+            if (resultType == null) {
+                resultType = caseResultType;
+            } else {
+                if (!caseResultType.equals(resultType)) {
+                    reporter.reportError("Todas las expresiones en los case deben devolver el mismo tipo", "", caseExpr.resultExpression.position);
+                }
+            }
+        }
+
+        // Analizar el Otherwise
+        TypeDenoter otherwiseType = (TypeDenoter) ast.EOther.visit(this, o);
+        if (!otherwiseType.equals(resultType)) {
+            reporter.reportError("EL tipo de expresion del Otherwise no es el mismo que el de los case", "", ast.EOther.position);
+        }
+
+        return resultType;
+    }
+    
+    public Object visitCaseExpression (CaseExpression ast, Object o){
+        return null; 
     }
 
     // Declarations
