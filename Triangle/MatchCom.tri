@@ -1,8 +1,8 @@
 let
   var n : Integer
 in
-  n := 4;
-  match (n > 3) of
+  n := 9;
+  match (n > 7) of
     case true : putint(1)
     case false : putint(2)
   end

@@ -72,6 +72,7 @@ import Triangle.AbstractSyntaxTrees.Program;
 import Triangle.AbstractSyntaxTrees.RecordExpression;
 import Triangle.AbstractSyntaxTrees.BoolExpression;
 import Triangle.AbstractSyntaxTrees.Case;
+import Triangle.AbstractSyntaxTrees.Expression;
 import Triangle.AbstractSyntaxTrees.RecordTypeDenoter;
 import Triangle.AbstractSyntaxTrees.SequentialCommand;
 import Triangle.AbstractSyntaxTrees.SequentialDeclaration;
@@ -245,52 +246,70 @@ public Object visitUntilCommand(UntilCommand ast, Object o) {
  * analice por partes, pero no se como todavia
  */
 public Object visitMatchCommand(MatchCommand ast, Object o) {
-    int matchValueRegister = machine.getNewRegister();
-    
-    // Evaluar la expresión base
-    ast.E.visit(this, o);
-    machine.emit(Op.LOAD, matchValueRegister);
+    Frame frame = (Frame) o;
+    int endMatchJumpAddr;
 
-    List<Integer> jumpTargets = new ArrayList<>();
-    boolean hasOtherwise = ast.COther != null;
+    ast.E.visit(this, frame); // Evaluamos la expresión (queda en el tope del stack)
 
-    for (Case c : ast.cases) {
-        for (Terminal constant : c.constants) {
-            constant.visit(this, o); // cargar constante
-            machine.emit(Op.LOAD, 0);
-            machine.emit(Op.CMP, matchValueRegister, 0);
-            // salto condicional si son iguales
-            int jumpIfEqualAddr = machine.emit(Op.JUMPIF, Address.UNRESOLVED);
-            jumpTargets.add(jumpIfEqualAddr);
+    List<Integer> jumpsToEnd = new ArrayList<>(); // Guardar direcciones de saltos al final
+
+    for (Case caseNode : ast.cases) {
+        int nextCaseJumpAddr;
+
+        for (Expression constant : caseNode.constants) {
+            // Duplicamos la expresión evaluada (cargada en tope del stack)
+            emit(Machine.LOADop, Machine.STr, -1, 0); // Cargar copia de la expresión
+
+            // Cargamos la constante
+            constant.visit(this, frame);
+
+            // Cargar el size = 1 (porque vamos a comparar un valor sencillo)
+            emit(Machine.LOADLop, 1,0,0);
+
+            // Llamar a eqDisplacement para comparar (E == constante)
+            emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.eqDisplacement);
         }
+
+        // Si hay más de una constante, combinarlas con OR
+        int nConstants = caseNode.constants.size();
+        for (int i = 1; i < nConstants; i++) {
+            emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.orDisplacement);
+        }
+
+        // Ahora en el tope hay un booleano que indica si matcheó este case
+        int jumpIfFalseAddr = nextInstrAddr;
+        emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, 0); // Si no matchea, salta al siguiente case
+
+        // Si sí matchea, ejecuta el comando
+        caseNode.command.visit(this, frame);
+
+        // Después de ejecutar un case, saltamos al final del match
+        jumpsToEnd.add(nextInstrAddr);
+        emit(Machine.JUMPop, 0, Machine.CBr, 0);
+
+        patch(jumpIfFalseAddr, nextInstrAddr); // Parcheamos para que si no matcheaba, vaya al siguiente case
     }
 
-    // Jump to otherwise si existe
-    int otherwiseJumpAddr = -1;
-    if (hasOtherwise) {
-        otherwiseJumpAddr = machine.emit(Op.JUMP, Address.UNRESOLVED);
+    if (ast.COther != null) {
+        ast.COther.visit(this, frame); // Otherwise
     }
 
-    // Escribir los comandos de cada case y resolver los saltos
-    for (int i = 0; i < ast.cases.size(); i++) {
-        Case c = ast.cases.get(i);
-        machine.resolve(jumpTargets.get(i), machine.nextInstrAddr());
-        c.command.visit(this, o);
-        machine.emit(Op.JUMP, Address.RESOLVE_LATER); // salto al final
+    endMatchJumpAddr = nextInstrAddr;
+
+    // Parcheamos todos los saltos hacia el final
+    for (Integer jumpAddr : jumpsToEnd) {
+        patch(jumpAddr, endMatchJumpAddr);
     }
 
-    if (hasOtherwise) {
-        machine.resolve(otherwiseJumpAddr, machine.nextInstrAddr());
-        ast.COther.visit(this, o);
-    }
+    // Finalmente, hacer POP del valor original de E (ya no lo ocupamos)
+    emit(Machine.POPop, 0, 0, 1);
 
     return null;
 }
+
 
 public Object visitCase(Case ast, Object o) {
-    return null;
-}
-
+    return null; }
 
     // Expressions
     public Object visitArrayExpression(ArrayExpression ast, Object o) {

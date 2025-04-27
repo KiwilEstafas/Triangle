@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class Case extends AST {
 
-    public Case(List<Terminal> constants, Command command, SourcePosition thePosition) {
+    public Case(List<Expression> constants, Command command, SourcePosition thePosition) {
         super(thePosition);
         this.constants = constants;
         this.command = command;
@@ -28,6 +28,6 @@ public class Case extends AST {
         return v.visitCase(this, o);
     }
     
-    public final List<Terminal> constants;  // Permite que sean o INT o BOOL
+    public final List<Expression> constants;  // Permite que sean o INT o BOOL
     public final Command command;          // Comando a ejecutar si el caso es seleccionado
 }

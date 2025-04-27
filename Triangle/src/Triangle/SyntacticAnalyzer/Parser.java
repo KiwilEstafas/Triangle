@@ -83,8 +83,8 @@ public class Parser {
     * Este metodo se encarga de separar los terminales por coma en el caso de
     * que un case tenga varios valores asignados al mismo comando
     */
-    private List<Terminal> parseConstantList() throws SyntaxError {
-        List<Terminal> terminals = new ArrayList<>();
+    private List<Expression> parseConstantList() throws SyntaxError {
+        List<Expression> terminals = new ArrayList<>();
         terminals.add(parseTerminal());
 
         while (currentToken.kind == Token.COMMA) {
@@ -102,7 +102,7 @@ public class Parser {
      * Analiza que los terminales correspondan a booleanos o integers
      * y los clasifica, ademas que revisa que no sean de ningun otro tipo
      */
-    private Terminal parseTerminal() throws SyntaxError {
+    private Expression parseTerminal() throws SyntaxError {
         SourcePosition pos = new SourcePosition();
         start(pos);
 
@@ -110,13 +110,13 @@ public class Parser {
             case Token.INTLITERAL:
                 String intVal = currentToken.spelling;
                 accept(Token.INTLITERAL);
-                return new IntegerLiteral(intVal, pos);
+                return new IntegerExpression(new IntegerLiteral(intVal, pos), pos);
 
             case Token.TRUE:
             case Token.FALSE:
                 String boolVal = currentToken.spelling;
                 acceptIt();
-                return new BoolLiteral(boolVal, pos);
+                return new BoolExpression(new BoolLiteral(boolVal, pos), pos);
 
             default:
                 syntacticError("Expected a literal (integer or boolean)", currentToken.spelling);
@@ -389,7 +389,7 @@ public class Parser {
                 //Recorre case por case
                 while (currentToken.kind == Token.CASE) {
                     accept(Token.CASE);
-                    List<Terminal> constList = parseConstantList();
+                    List<Expression> constList = parseConstantList();
                     accept(Token.COLON);
                     Command cAST = parseSingleCommand();
                     finish(casePos);

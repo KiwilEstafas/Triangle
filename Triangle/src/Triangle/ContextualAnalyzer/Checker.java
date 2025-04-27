@@ -178,7 +178,7 @@ public Object visitUntilCommand(UntilCommand ast, Object o) {
  * para validar que tambien sea valido. 
  */
     public Object visitCase(Case ast, Object o) {
-        for (Terminal e : ast.constants) {
+        for (Expression e : ast.constants) {
             TypeDenoter t = (TypeDenoter) e.visit(this, o);
             if (!t.equals(o)) {
                 reporter.reportError("Case constant type does not match match expression type", "", e.position);
