@@ -16,7 +16,8 @@ import Triangle.AbstractSyntaxTrees.BoolLiteral;
 import Triangle.AbstractSyntaxTrees.BoolTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CallCommand;
 import Triangle.AbstractSyntaxTrees.CallExpression;
-import Triangle.AbstractSyntaxTrees.Case;
+import Triangle.AbstractSyntaxTrees.CaseCommand;
+import Triangle.AbstractSyntaxTrees.CaseExpression;
 import Triangle.AbstractSyntaxTrees.CharTypeDenoter;
 import Triangle.AbstractSyntaxTrees.CharacterExpression;
 import Triangle.AbstractSyntaxTrees.CharacterLiteral;
@@ -29,6 +30,7 @@ import Triangle.AbstractSyntaxTrees.EmptyCommand;
 import Triangle.AbstractSyntaxTrees.EmptyExpression;
 import Triangle.AbstractSyntaxTrees.EmptyFormalParameterSequence;
 import Triangle.AbstractSyntaxTrees.ErrorTypeDenoter;
+import Triangle.AbstractSyntaxTrees.Expression;
 import Triangle.AbstractSyntaxTrees.FuncActualParameter;
 import Triangle.AbstractSyntaxTrees.FuncDeclaration;
 import Triangle.AbstractSyntaxTrees.FuncFormalParameter;
@@ -73,6 +75,7 @@ import Triangle.AbstractSyntaxTrees.VnameExpression;
 import Triangle.AbstractSyntaxTrees.WhileCommand;
 import Triangle.AbstractSyntaxTrees.ForCommand;
 import Triangle.AbstractSyntaxTrees.MatchCommand;
+import Triangle.AbstractSyntaxTrees.MatchExpression;
 import Triangle.AbstractSyntaxTrees.RepeatCommand;
 import Triangle.AbstractSyntaxTrees.UntilCommand;
 import Triangle.CodeGenerator.Field;
@@ -155,6 +158,46 @@ public class TableVisitor implements Visitor {
       ast.C.visit(this,null);
       return(null);
   }
+      public Object visitRepeatCommand(RepeatCommand ast, Object o) {
+      ast.E.visit(this, null);
+      ast.C.visit(this, null);
+      
+      return(null);
+    }
+
+    public Object visitUntilCommand(UntilCommand ast, Object o) {
+      ast.E.visit(this, null);
+      ast.C.visit(this, null);
+      
+      return(null);
+    }
+
+
+    public Object visitMatchCommand(MatchCommand ast, Object o) {
+        ast.E.visit(this, null);
+
+        // Recorrer todos los CaseCommand en la lista cases
+        for (CaseCommand c : ast.cases) {
+            c.visit(this, null);
+        }
+
+        if (ast.COther != null) {
+            ast.COther.visit(this, null);
+        }
+        return null;
+    }
+
+    public Object visitCase(CaseCommand ast, Object o) {
+        // Recorrer todas las constantes del case
+        for (Expression e : ast.constants) {
+            e.visit(this, null);
+        }
+
+        ast.command.visit(this, null);
+
+        return null;
+    }
+
   // </editor-fold>
 
   // <editor-fold defaultstate="collapsed" desc=" Expressions ">
@@ -648,26 +691,12 @@ public class TableVisitor implements Visitor {
     private DefaultTableModel model;
     // </editor-fold>
 
-    public Object visitRepeatCommand(RepeatCommand ast, Object o) {
-      ast.E.visit(this, null);
-      ast.C.visit(this, null);
-      
-      return(null);
+    public Object visitMatchExpression(MatchExpression me, Object o) {
+        throw new UnsupportedOperationException("Not supported yet."); 
     }
 
-    public Object visitUntilCommand(UntilCommand ast, Object o) {
-      ast.E.visit(this, null);
-      ast.C.visit(this, null);
-      
-      return(null);
+    public Object visitCaseExpression(CaseExpression ce, Object o) {
+        throw new UnsupportedOperationException("Not supported yet."); 
     }
 
-
-    public Object visitMatchCommand(MatchCommand ast, Object o) {
-        return(null);
-    }
-
-    public Object visitCase(Case ast, Object o) {
-        return(null);
-    }
 }
