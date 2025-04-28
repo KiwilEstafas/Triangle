@@ -3,6 +3,6 @@ let
 in
   n := 9;
   match (n > 7) of
-    case true : putint(1)
     case false : putint(2)
+    case true : putint(1)
   end

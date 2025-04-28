@@ -242,74 +242,80 @@ public Object visitUntilCommand(UntilCommand ast, Object o) {
  * 
  * @param ast
  * @param o
- * @return 
- * no funciona, no evalua bien los casos y si es verdad pasa por todos los case
- * creo que seria mejor separar el visitMatch y Visit case para que los 
- * analice por partes, pero no se como todavia
+ * @return null
+ * Generacion del codigo TAM para el interprete.
+ * Primero evalua la expresion del match y luego procede a comparar 
+ * el resultado de la expresion con cada costante que tenga un case. 
+ * Si alguna constante del case es igual al resultado de la expresion inicial 
+ * del match ejecuta el comando, en caso contrario hace un jump y prueba con el 
+ * siguiente caso. Si ningun caso es igual evalua si hay un otherwise y en caso
+ * de que exista ejecuta su respectivo comando.
+ *
  */
 public Object visitMatchCommand(MatchCommand ast, Object o) {
     Frame frame = (Frame) o;
-    int endMatchJumpAddr;
+    
+    emit(Machine.PUSHop, 0, 0, 1); 
+    ast.E.visit(this, frame); // Evaluar la expresion inicial del match
+    
+    // Lista de direcciones de saltos para parchar
+    List<Integer> jumpEndCaseAddrs = new ArrayList<>();
+    
+    // Iterar sobre todos los CaseCommand
+    for (CaseCommand caseCmd : ast.cases) {
+        // Para cada constante dentro del case
+        for (Expression constant : caseCmd.constants) {
+            emit(Machine.LOADop, 1, Machine.STr, -1); // Cargamos la expresión evaluada
+            constant.visit(this, frame); // Evaluamos la constante del case
+            
+            emit(Machine.LOADLop,0,0,1); //Añadimos a la pila el 1 del size para el eqDisplacement
+            
+            //Comparar la constante del case con el resultado de la expresion del match
+            emit(Machine.CALLop, Machine.LBr, Machine.PBr, Machine.eqDisplacement); 
+            
+            int jumpIfNotEqualAddr = nextInstrAddr;
+            emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, 0); // Si NO son iguales se salta y no se hace el comando
+            
+            // Si son iguales (match)
+            caseCmd.command.visit(this, frame); // Se ejecuta el comando
+            emit(Machine.LOADLop, 0, 0, 1); // Cargamos 'true' para indicar que ya ejecutamos un case
+            emit(Machine.STOREop, 1, Machine.STr, -2); // Guardamos 'true' en la reserva inicial
 
-    ast.E.visit(this, frame); // Evaluamos la expresión (queda en el tope del stack)
+            int jumpAfterCase = nextInstrAddr;
+            emit(Machine.JUMPop, Machine.CBr, 0,0); // Saltamos al final del Match
+            jumpEndCaseAddrs.add(jumpAfterCase);  // Guardamos para parchar
 
-    List<Integer> jumpsToEnd = new ArrayList<>(); // Guardar direcciones de saltos al final
-
-    for (CaseCommand caseNode : ast.cases) {
-        int nextCaseJumpAddr;
-
-        for (Expression constant : caseNode.constants) {
-            // Duplicamos la expresión evaluada (cargada en tope del stack)
-            emit(Machine.LOADop, Machine.STr, -1, 0); // Cargar copia de la expresión
-
-            // Cargamos la constante
-            constant.visit(this, frame);
-
-            // Cargar el size = 1 (porque vamos a comparar un valor sencillo)
-            emit(Machine.LOADLop, 1,0,0);
-
-            // Llamar a eqDisplacement para comparar (E == constante)
-            emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.eqDisplacement);
+            patch(jumpIfNotEqualAddr, nextInstrAddr); // Si no era igual, prueba con el la siguiente constante
         }
-
-        // Si hay más de una constante, combinarlas con OR
-        int nConstants = caseNode.constants.size();
-        for (int i = 1; i < nConstants; i++) {
-            emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.orDisplacement);
-        }
-
-        // Ahora en el tope hay un booleano que indica si matcheó este case
-        int jumpIfFalseAddr = nextInstrAddr;
-        emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, 0); // Si no matchea, salta al siguiente case
-
-        // Si sí matchea, ejecuta el comando
-        caseNode.command.visit(this, frame);
-
-        // Después de ejecutar un case, saltamos al final del match
-        jumpsToEnd.add(nextInstrAddr);
-        emit(Machine.JUMPop, 0, Machine.CBr, 0);
-
-        patch(jumpIfFalseAddr, nextInstrAddr); // Parcheamos para que si no matcheaba, vaya al siguiente case
     }
-
+    
+    // Otherwise e)
+    emit(Machine.LOADop, 1, Machine.STr, -2); 
+    int jumpIfMatched = nextInstrAddr;
+    emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, 0);
     if (ast.COther != null) {
-        ast.COther.visit(this, frame); // Otherwise
+        ast.COther.visit(this, frame); // Ejecutamos el otherwise si hay alguno
     }
-
-    endMatchJumpAddr = nextInstrAddr;
-
-    // Parcheamos todos los saltos hacia el final
-    for (Integer jumpAddr : jumpsToEnd) {
-        patch(jumpAddr, endMatchJumpAddr);
+    
+    patch(jumpIfMatched, nextInstrAddr); //Si algun case hizo match, saltamos el otherwise
+    
+    // Parcheamos todos los saltos 
+    for (int addr : jumpEndCaseAddrs) {
+        patch(addr, nextInstrAddr);
     }
-
-    // Finalmente, hacer POP del valor original de E (ya no lo ocupamos)
-    emit(Machine.POPop, 0, 0, 1);
-
+    
+    emit(Machine.POPop, 0, 0, 2); // Liberar la memroia al terminar
     return null;
 }
 
-
+/**
+ * 
+ * @param ast
+ * @param o
+ * @return null
+ * El visit case no se utiliza ya que los casos se analizan de una vez en el 
+ * visitMatchCommand
+ */
     public Object visitCase(CaseCommand ast, Object o) {
     return null; }
 
