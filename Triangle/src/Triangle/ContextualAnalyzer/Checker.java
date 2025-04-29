@@ -13,9 +13,6 @@
  */
 package Triangle.ContextualAnalyzer;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-
 import Triangle.ErrorReporter;
 import Triangle.StdEnvironment;
 import Triangle.AbstractSyntaxTrees.*;
@@ -89,67 +86,99 @@ public final class Checker implements Visitor {
         ast.C.visit(this, null);
         return null;
     }
+
     /**
-     * 
+     *
      * @param ast
      * @param o
-     * @return null
-     * Visitor para el AST que se encarga de verificar que los tipos y expresiones sean correctas
+     * @return null Visitor para el AST que se encarga de verificar que los
+     * tipos y expresiones sean correctas
      */
-   public Object visitForCommand(ForCommand ast, Object o) {
-    // Obtener el tipo de la variable del loop
-    TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
-    if (!vType.equals(StdEnvironment.integerType)) {
-        reporter.reportError("The loop control variable must be of type Integer", "", ast.V.position);
+    public Object visitForCommand(ForCommand ast, Object o) {
+        // Obtiene el tipo de la variable del loop
+        TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
+        if (!vType.equals(StdEnvironment.integerType)) {
+            reporter.reportError("The loop control variable must be of type Integer", "", ast.V.position);
+        }
+
+        // Revisa que E1  Integer
+        TypeDenoter t1 = (TypeDenoter) ast.E1.visit(this, null);
+        if (!t1.equals(StdEnvironment.integerType)) {
+            reporter.reportError("The initial expression of the loop must be of type Integer", "", ast.E1.position);
+        }
+
+        // Revisa que E2 Integer
+        TypeDenoter t2 = (TypeDenoter) ast.E2.visit(this, null);
+        if (!t2.equals(StdEnvironment.integerType)) {
+            reporter.reportError("The final expression of the loop must be of type Integer", "", ast.E2.position);
+        }
+
+        // Revisa el cuerpo del for
+        ast.C.visit(this, null);
+        return null;
     }
 
-    // Revisar que E1  Integer
-    TypeDenoter t1 = (TypeDenoter) ast.E1.visit(this, null);
-    if (!t1.equals(StdEnvironment.integerType)) {
-        reporter.reportError("The initial expression of the loop must be of type Integer", "", ast.E1.position);
+    /**
+     * Visita un nodo del AST correspondiente a un comando `repeat`. Su función
+     * es verificar que la condición de terminación del bucle sea de tipo
+     * booleano.
+     *
+     * @param ast El nodo del AST que representa el comando `repeat`.
+     * @param o Información adicional (no se utiliza en este caso, se pasa
+     * `null`).
+     * @return null No devuelve ningún valor específico.
+     */
+    public Object visitRepeatCommand(RepeatCommand ast, Object o) {
+        // Visita y analiza el cuerpo del bucle `repeat` (las sentencias que se ejecutan).
+        ast.C.visit(this, null);
+
+        // Visita y obtiene el tipo de la expresión de la condición del `repeat`.
+        TypeDenoter condType = (TypeDenoter) ast.E.visit(this, null);
+
+        // Verifica si el tipo de la condición es booleano. Si no lo es,
+        // reporta un error indicando que la condición del `repeat` debe ser booleana.
+        if (!condType.equals(StdEnvironment.booleanType)) {
+            reporter.reportError("La condición del Repeat debe ser de tipo Boolean", "", ast.E.position);
+        }
+
+        // No se devuelve ningún valor específico después de la verificación.
+        return null;
     }
 
-    // Revisar que E2 Integer
-    TypeDenoter t2 = (TypeDenoter) ast.E2.visit(this, null);
-    if (!t2.equals(StdEnvironment.integerType)) {
-        reporter.reportError("The final expression of the loop must be of type Integer", "", ast.E2.position);
+    /**
+     * Visita un nodo del AST correspondiente a un comando `until`. Su propósito
+     * es asegurar que la condición de terminación del bucle sea de tipo
+     * booleano.
+     *
+     * @param ast El nodo del AST que representa el comando `until`.
+     * @param o Información adicional (no se utiliza aquí, se pasa `null`).
+     * @return null No retorna ningún valor particular.
+     */
+    public Object visitUntilCommand(UntilCommand ast, Object o) {
+        // Visita y obtiene el tipo de la expresión de la condición del `until`.
+        TypeDenoter condType = (TypeDenoter) ast.E.visit(this, null);
+
+        // Verifica si el tipo de la condición es booleano. En caso contrario,
+        // notifica un error especificando que la condición del `until` debe ser booleana.
+        if (!condType.equals(StdEnvironment.booleanType)) {
+            reporter.reportError("La condición del Until debe ser de tipo Boolean", "", ast.E.position);
+        }
+
+        // Visita y analiza el cuerpo del bucle `until` (las sentencias a ejecutar).
+        ast.C.visit(this, null);
+
+        // No se devuelve ningún valor significativo tras la verificación.
+        return null;
     }
 
-    // Revisar el cuerpo del for
-    ast.C.visit(this, null);
-    return null;
-}
-   
-public Object visitRepeatCommand(RepeatCommand ast, Object o) {
-    ast.C.visit(this, null);
-    TypeDenoter condType = (TypeDenoter) ast.E.visit(this, null);
-
-    if (!condType.equals(StdEnvironment.booleanType)) {
-        reporter.reportError("Repeat condition must be of type Boolean", "", ast.E.position);
-    }
-
-    return null;
-}
-
-public Object visitUntilCommand(UntilCommand ast, Object o) {
-    TypeDenoter condType = (TypeDenoter) ast.E.visit(this, null);
-    if (!condType.equals(StdEnvironment.booleanType)) {
-        reporter.reportError("Until condition must be of type Boolean", "", ast.E.position);
-    }
-
-    ast.C.visit(this, null);
-    return null;
-}
-  
-/**
- * 
- * @param ast
- * @param o
- * @return null
- * Verifica que el tipo de expresion sea o un numero o un booleano y revisa
- * case por case validando que sus tipos tambien sean validos
- */
-   
+    /**
+     *
+     * @param ast
+     * @param o
+     * @return null Verifica que el tipo de expresion sea o un numero o un
+     * booleano y revisa case por case validando que sus tipos tambien sean
+     * validos
+     */
     public Object visitMatchCommand(MatchCommand ast, Object o) {
         TypeDenoter exprType = (TypeDenoter) ast.E.visit(this, o);
 
@@ -162,21 +191,20 @@ public Object visitUntilCommand(UntilCommand ast, Object o) {
         }
 
         if (ast.COther != null) {
-            ast.COther.visit(this, o); 
+            ast.COther.visit(this, o);
         }
 
         return null;
     }
 
-/**
- * 
- * @param ast
- * @param o
- * @return null
- * Revisa el tipo de dato de los cases (int o bool) sean los mismos que el match
- * (Que hablen el mismo idioma) y de paso verifica el comando del case
- * para validar que tambien sea valido. 
- */
+    /**
+     *
+     * @param ast
+     * @param o
+     * @return null Revisa el tipo de dato de los cases (int o bool) sean los
+     * mismos que el match (Que hablen el mismo idioma) y de paso verifica el
+     * comando del case para validar que tambien sea valido.
+     */
     public Object visitCase(CaseCommand ast, Object o) {
         for (Expression e : ast.constants) {
             TypeDenoter t = (TypeDenoter) e.visit(this, o);
@@ -254,11 +282,12 @@ public Object visitUntilCommand(UntilCommand ast, Object o) {
         ast.type = StdEnvironment.charType;
         return ast.type;
     }
-    
+
     public Object visitBoolExpression(BoolExpression ast, Object o) {
         ast.type = StdEnvironment.booleanType;
         return ast.type;
     }
+
     public Object visitEmptyExpression(EmptyExpression ast, Object o) {
         ast.type = null;
         return ast.type;
@@ -323,17 +352,33 @@ public Object visitUntilCommand(UntilCommand ast, Object o) {
         ast.type = (TypeDenoter) ast.V.visit(this, o);
         return ast.type;
     }
-    
+
+    /**
+     * Visita un nodo del AST correspondiente a una expresión `match`. Su
+     * función es verificar la coherencia de tipos dentro de la expresión
+     * `match`, asegurando que la expresión a comparar sea de tipo entero o
+     * booleano, que las constantes en los `case` coincidan en tipo con la
+     * expresión principal, y que todas las expresiones de resultado (tanto en
+     * los `case` como en el `otherwise`) tengan el mismo tipo.
+     *
+     * @param ast El nodo del AST que representa la expresión `match`.
+     * @param o Información adicional (se pasa tal cual a las visitas de los
+     * sub-nodos).
+     * @return TypeDenoter El tipo resultante de la expresión `match` (el tipo
+     * común de los resultados de los `case` y el `otherwise`).
+     */
     public Object visitMatchExpression(MatchExpression ast, Object o) {
+        // Visita y obtiene el tipo de la expresión principal del `match`.
         TypeDenoter eType = (TypeDenoter) ast.E.visit(this, o);
 
+        // Verifica que la expresión principal sea de tipo entero o booleano.
         if (!(eType.equals(StdEnvironment.integerType) || eType.equals(StdEnvironment.booleanType))) {
             reporter.reportError("La expresion debe de ser tipo booleano o integer", "", ast.E.position);
         }
 
-        TypeDenoter resultType = null; // El tipo de los resultados
+        TypeDenoter resultType = null; // Variable para almacenar el tipo común de los resultados.
 
-        // Analizar cada case
+        // Itera sobre cada una de las cláusulas `case` dentro del `match`.
         for (CaseExpression caseExpr : ast.cases) {
             for (Expression constExpr : caseExpr.constExpressions) {
                 TypeDenoter constType = (TypeDenoter) constExpr.visit(this, o);
@@ -342,7 +387,6 @@ public Object visitUntilCommand(UntilCommand ast, Object o) {
                 }
             }
 
-            // Verficiar el resultado 
             TypeDenoter caseResultType = (TypeDenoter) caseExpr.resultExpression.visit(this, o);
 
             if (resultType == null) {
@@ -354,17 +398,18 @@ public Object visitUntilCommand(UntilCommand ast, Object o) {
             }
         }
 
-        // Analizar el Otherwise
         TypeDenoter otherwiseType = (TypeDenoter) ast.EOther.visit(this, o);
+        // Verifica que el tipo de la expresión del `otherwise` coincida con el tipo común de los resultados de los `case`.
         if (!otherwiseType.equals(resultType)) {
             reporter.reportError("EL tipo de expresion del Otherwise no es el mismo que el de los case", "", ast.EOther.position);
         }
 
+        // Retorna el tipo común de los resultados, que es el tipo de la expresión `match`.
         return resultType;
     }
-    
-    public Object visitCaseExpression (CaseExpression ast, Object o){
-        return null; 
+
+    public Object visitCaseExpression(CaseExpression ast, Object o) {
+        return null;
     }
 
     // Declarations
@@ -441,7 +486,7 @@ public Object visitUntilCommand(UntilCommand ast, Object o) {
             reporter.reportError("identifier \"%\" already declared",
                     ast.I.spelling, ast.position);
         }
-        
+
         return null;
     }
 
@@ -755,8 +800,8 @@ public Object visitUntilCommand(UntilCommand ast, Object o) {
         }
         return binding;
     }
-    
-    public Object visitBoolLiteral(BoolLiteral BL, Object o){
+
+    public Object visitBoolLiteral(BoolLiteral BL, Object o) {
         return StdEnvironment.booleanType;
     }
 
@@ -856,8 +901,7 @@ public Object visitUntilCommand(UntilCommand ast, Object o) {
     }
 
     /////////////////////////////////////////////////////////////////////////////
-
-  public Checker(ErrorReporter reporter) {
+    public Checker(ErrorReporter reporter) {
         this.reporter = reporter;
         this.idTable = new IdentificationTable();
         establishStdEnvironment();

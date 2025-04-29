@@ -194,6 +194,14 @@ public class TreeVisitor implements Visitor {
     public Object visitVnameExpression(VnameExpression ast, Object obj) {
         return(createUnary("Vname Expression", ast.V));
     }
+    
+    public Object visitMatchExpression(MatchExpression ast, Object o) {
+        return (createUnary("MatchExpr.", ast.E));
+    }
+
+    public Object visitCaseExpression(CaseExpression ce, Object o) {
+        throw new UnsupportedOperationException("TreeVisitor.visitCaseExpression: Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc=" Declarations ">
@@ -473,13 +481,4 @@ public class TreeVisitor implements Visitor {
         return(t);             
     }
     // </editor-fold>
-
-    public Object visitMatchExpression(MatchExpression ast, Object o) {
-        return (createUnary("MatchExpr.", ast.E));
-    }
-
-    public Object visitCaseExpression(CaseExpression ce, Object o) {
-        throw new UnsupportedOperationException("TreeVisitor.visitCaseExpression: Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-  
 }
