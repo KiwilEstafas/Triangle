@@ -1,7 +1,7 @@
 let
   var n : Integer
 in
-  n := 2;
+  n := 9;
   match (n > 7) of
     case false : putint(2)
     case true : putint(1)

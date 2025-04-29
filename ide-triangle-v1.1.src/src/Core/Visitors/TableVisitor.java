@@ -691,12 +691,26 @@ public class TableVisitor implements Visitor {
     private DefaultTableModel model;
     // </editor-fold>
 
-    public Object visitMatchExpression(MatchExpression me, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); 
+    public Object visitMatchExpression(MatchExpression ast, Object o) {
+        ast.E.visit(this, null);
+
+        // Recorrer todos los CaseCommand en la lista cases
+        for (CaseExpression c : ast.cases) {
+            c.visit(this, null);
+        }
+
+        if (ast.EOther != null) {
+            ast.EOther.visit(this, null);
+        }
+        return null;
     }
 
-    public Object visitCaseExpression(CaseExpression ce, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); 
+    public Object visitCaseExpression(CaseExpression ast, Object o) {
+
+        for (Expression e : ast.constExpressions) {
+            e.visit(this, null);
+        }
+        return null;
     }
 
 }

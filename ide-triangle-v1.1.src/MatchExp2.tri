@@ -1,0 +1,11 @@
+let
+  var result : Integer;
+  func diasmes(m : Integer) : Integer ~
+    match (m) of
+    case 2: 28
+    case 4,6,9,11: 30
+    otherwise: 31
+  end
+in
+  result := diasmes(1);
+  putint(result)

@@ -10,6 +10,7 @@
 <project name="Triangle" default="default" basedir=".">
     <description>Builds, tests, and runs the project Triangle.</description>
     <import file="nbproject/build-impl.xml"/>
+    <property name="dist.jar" value="../ide-triangle-v1.1.src/Triangle.jar"/>
     <!--
 
     There exist several targets which are by default empty and which can be 

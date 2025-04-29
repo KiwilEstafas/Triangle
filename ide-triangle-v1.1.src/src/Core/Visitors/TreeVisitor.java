@@ -137,7 +137,7 @@ public class TreeVisitor implements Visitor {
     }
 
   public Object visitMatchCommand(MatchCommand ast, Object obj){
-        return (createUnary("MatcgCom.", ast.E));
+        return (createUnary("MatchCom.", ast.E));
     }
 
   public Object visitCase(CaseCommand ast, Object o) {
@@ -474,12 +474,12 @@ public class TreeVisitor implements Visitor {
     }
     // </editor-fold>
 
-    public Object visitMatchExpression(MatchExpression me, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public Object visitMatchExpression(MatchExpression ast, Object o) {
+        return (createUnary("MatchExpr.", ast.E));
     }
 
     public Object visitCaseExpression(CaseExpression ce, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        throw new UnsupportedOperationException("TreeVisitor.visitCaseExpression: Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
   
 }

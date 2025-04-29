@@ -1,1 +1,3 @@
 /Triangle/dist/
+/Triangle/build/
+**/*.class
