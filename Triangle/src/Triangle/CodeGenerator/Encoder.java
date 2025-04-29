@@ -173,148 +173,195 @@ public final class Encoder implements Visitor {
     }
 
     /**
+     * Genera el código TAM para un comando 'for'.
      *
-     * @param ast
-     * @param o
-     * @return null Visitor del AST para el For que genera el codigo TAM
+     * @param ast Nodo ForCommand del AST que representa el ciclo for.
+     * @param o Frame actual de generación de código.
+     * @return Siempre retorna null.
      */
     public Object visitForCommand(ForCommand ast, Object o) {
+        // Se convierte el parámetro de entrada al frame de ejecución actual
         Frame frame = (Frame) o;
-
+        // Se genera código para evaluar y almacenar el valor inicial en la variable de control
         ast.E1.visit(this, frame);
         encodeStore(ast.V, new Frame(frame, 1), 1);
-
+        // Se reserva una instrucción para saltar a la evaluación de la condición
         int jumpToCondAddr = nextInstrAddr;
         emit(Machine.JUMPop, 0, Machine.CBr, 0);
-
+        // Marca el inicio del cuerpo del ciclo
         int loopStartAddr = nextInstrAddr;
         ast.C.visit(this, frame);
+        // Actualización de la variable de control (V := V ± 1)
+        encodeFetch(ast.V, frame, 1);          // Push de V al tope de la pila
+        emit(Machine.LOADLop, 0, 0, 1);         // Push de la constante 1
 
-        // Aumentar o Restar a  V dependiendo de si es downto o solo to
-        encodeFetch(ast.V, frame, 1);                    // Push V
-        emit(Machine.LOADLop, 0, 0, 1);                  // Push 1
         if (ast.IsDownto) {
-            emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.subDisplacement); // resta
+            // Si es un ciclo descendente (downto), se realiza una resta
+            emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.subDisplacement);
         } else {
-            emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement); // suma
+            // Si es un ciclo ascendente (to), se realiza una suma
+            emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.addDisplacement);
         }
-        encodeStore(ast.V, new Frame(frame, 1), 1);      // V := V ± 1
 
+        encodeStore(ast.V, new Frame(frame, 1), 1); // Se almacena el nuevo valor de V
+        // Evaluación de la condición para continuar o salir del ciclo
         int conditionAddr = nextInstrAddr;
-        encodeFetch(ast.V, frame, 1);                    // Push V
-        ast.E2.visit(this, frame);                       // Push E2
+        encodeFetch(ast.V, frame, 1);          // Push de V
+        ast.E2.visit(this, frame);              // Push de E2 (límite superior o inferior)
+
         if (ast.IsDownto) {
-            emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.geDisplacement); // V >= E2
+            // Condición para ciclo descendente: V >= E2
+            emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.geDisplacement);
         } else {
-            emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.leDisplacement); // V <= E2
+            // Condición para ciclo ascendente: V <= E2
+            emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.leDisplacement);
         }
 
+        // Si la condición es verdadera, salta al inicio del cuerpo del ciclo
         emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, loopStartAddr);
+        // Parcha el salto inicial para que apunte a la evaluación de la condición
         patch(jumpToCondAddr, conditionAddr);
-        return null;
-    }
-
-    public Object visitRepeatCommand(RepeatCommand ast, Object o) {
-        Frame frame = (Frame) o;
-
-        int startAddr = nextInstrAddr;         // Inicio del ciclo
-        ast.C.visit(this, frame);              // Ejecuta cuerpo
-        ast.E.visit(this, frame);              // Evalúa condición "until"
-        emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, startAddr); // Repite si FALSE
-
-        return null;
-    }
-
-    public Object visitUntilCommand(UntilCommand ast, Object o) {
-        Frame frame = (Frame) o;
-
-        int startAddr = nextInstrAddr;         // Inicio del ciclo
-        ast.C.visit(this, frame);              // Ejecuta cuerpo
-        ast.E.visit(this, frame);              // Evalúa condición "until"
-        emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, startAddr); // Repite si FALSE
 
         return null;
     }
 
     /**
+     * Genera el código TAM para un comando 'repeat'.
      *
-     * @param ast
-     * @param o
-     * @return null Generacion del codigo TAM para el interprete. Primero evalua
-     * la expresion del match y luego procede a comparar el resultado de la
-     * expresion con cada costante que tenga un case. Si alguna constante del
-     * case es igual al resultado de la expresion inicial del match ejecuta el
-     * comando, en caso contrario hace un jump y prueba con el siguiente caso.
-     * Si ningun caso es igual evalua si hay un otherwise y en caso de que
-     * exista ejecuta su respectivo comando.
+     * @param ast Nodo RepeatCommand del AST que representa el ciclo
+     * repeat-until.
+     * @param o Frame actual de generación de código.
+     * @return Siempre retorna null.
+     */
+    public Object visitRepeatCommand(RepeatCommand ast, Object o) {
+        // Se convierte el parámetro de entrada al frame de ejecución actual
+        Frame frame = (Frame) o;
+        // Marca la dirección de inicio del ciclo
+        int startAddr = nextInstrAddr;
+        // Genera código para el cuerpo del ciclo
+        ast.C.visit(this, frame);
+        // Genera código para evaluar la condición de finalización
+        ast.E.visit(this, frame);
+        // Si la condición es falsa, salta de regreso al inicio del cuerpo del ciclo
+        emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, startAddr);
+
+        return null;
+    }
+
+    /**
+     * Genera el código TAM para un comando 'until'.
      *
+     * @param ast Nodo UntilCommand del AST que representa el ciclo until-do.
+     * @param o Frame actual de generación de código.
+     * @return Siempre retorna null.
+     */
+    public Object visitUntilCommand(UntilCommand ast, Object o) {
+        // Se convierte el parámetro de entrada al frame de ejecución actual
+        Frame frame = (Frame) o;
+        // Marca la dirección de inicio del ciclo
+        int startAddr = nextInstrAddr;
+        // Genera código para el cuerpo del ciclo
+        ast.C.visit(this, frame);
+        // Genera código para evaluar la condición de finalización
+        ast.E.visit(this, frame);
+        // Si la condición es falsa, salta de regreso al inicio del cuerpo del ciclo
+        emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, startAddr);
+
+        return null;
+    }
+
+    /**
+     * Genera el código TAM para un comando 'match'.
+     *
+     * Evalúa una expresión inicial y compara su resultado con las constantes de
+     * cada caso (case). Si encuentra coincidencia, ejecuta el comando asociado.
+     * Si no hay coincidencias, evalúa y ejecuta el bloque 'otherwise' en caso
+     * de existir.
+     *
+     * @param ast Nodo MatchCommand del AST que representa el comando match.
+     * @param o Frame actual de generación de código.
+     * @return Siempre retorna null.
      */
     public Object visitMatchCommand(MatchCommand ast, Object o) {
+        // Se convierte el parámetro de entrada al frame de ejecución actual
         Frame frame = (Frame) o;
-
+        // Reserva un espacio para almacenar si algún case ha sido ejecutado
         emit(Machine.PUSHop, 0, 0, 1);
-        ast.E.visit(this, frame); // Evaluar la expresion inicial del match
-
-        // Lista de direcciones de saltos para parchar
+        // Genera código para evaluar la expresión inicial del match
+        ast.E.visit(this, frame);
+        // Lista que almacenará las direcciones de salto para parchar al final
         List<Integer> jumpEndCaseAddrs = new ArrayList<>();
 
-        // Iterar sobre todos los CaseCommand
+        // Itera sobre todos los casos definidos en el match
         for (CaseCommand caseCmd : ast.cases) {
-            // Para cada constante dentro del case
+            // Itera sobre todas las constantes asociadas a un mismo case
             for (Expression constant : caseCmd.constants) {
-                emit(Machine.LOADop, 1, Machine.STr, -1); // Cargamos la expresión evaluada
-                constant.visit(this, frame); // Evaluamos la constante del case
-
-                emit(Machine.LOADLop, 0, 0, 1); //Añadimos a la pila el 1 del size para el eqDisplacement
-
-                //Comparar la constante del case con el resultado de la expresion del match
+                // Carga el valor evaluado de la expresión inicial del match
+                emit(Machine.LOADop, 1, Machine.STr, -1);
+                // Genera código para evaluar la constante del case
+                constant.visit(this, frame);
+                // Carga la constante 1 necesaria para la operación de comparación
+                emit(Machine.LOADLop, 0, 0, 1);
+                // Compara el valor del match con la constante (igualdad)
                 emit(Machine.CALLop, Machine.LBr, Machine.PBr, Machine.eqDisplacement);
-
+                // Si no son iguales, prepara un salto al siguiente case
                 int jumpIfNotEqualAddr = nextInstrAddr;
-                emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, 0); // Si NO son iguales se salta y no se hace el comando
-
-                // Si son iguales (match)
-                caseCmd.command.visit(this, frame); // Se ejecuta el comando
-                emit(Machine.LOADLop, 0, 0, 1); // Cargamos 'true' para indicar que ya ejecutamos un case
-                emit(Machine.STOREop, 1, Machine.STr, -2); // Guardamos 'true' en la reserva inicial
-
+                emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, 0);
+                // Si son iguales, se ejecuta el comando asociado al case
+                caseCmd.command.visit(this, frame);
+                // Marca que ya se ejecutó un case exitosamente
+                emit(Machine.LOADLop, 0, 0, 1);
+                emit(Machine.STOREop, 1, Machine.STr, -2);
+                // Salta al final del match evitando seguir evaluando otros cases
                 int jumpAfterCase = nextInstrAddr;
-                emit(Machine.JUMPop, Machine.CBr, 0, 0); // Saltamos al final del Match
-                jumpEndCaseAddrs.add(jumpAfterCase);  // Guardamos para parchar
-
-                patch(jumpIfNotEqualAddr, nextInstrAddr); // Si no era igual, prueba con el la siguiente constante
+                emit(Machine.JUMPop, Machine.CBr, 0, 0);
+                jumpEndCaseAddrs.add(jumpAfterCase);
+                // Se parchea el salto si no hubo coincidencia con esta constante
+                patch(jumpIfNotEqualAddr, nextInstrAddr);
             }
         }
 
-        // Otherwise e)
+        // Verifica si se debe ejecutar el bloque 'otherwise'
         emit(Machine.LOADop, 1, Machine.STr, -2);
         int jumpIfMatched = nextInstrAddr;
         emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, 0);
+
+        // Si no hubo coincidencias y existe un otherwise, ejecutarlo
         if (ast.COther != null) {
-            ast.COther.visit(this, frame); // Ejecutamos el otherwise si hay alguno
+            ast.COther.visit(this, frame);
         }
 
-        patch(jumpIfMatched, nextInstrAddr); //Si algun case hizo match, saltamos el otherwise
+        // Se parchea el salto para omitir el otherwise si ya se había ejecutado un case
+        patch(jumpIfMatched, nextInstrAddr);
 
-        // Parcheamos todos los saltos 
+        // Parchea todos los saltos de los casos exitosos al final del match
         for (int addr : jumpEndCaseAddrs) {
             patch(addr, nextInstrAddr);
         }
 
-        emit(Machine.POPop, 0, 0, 2); // Liberar la memroia al terminar
+        // Libera el espacio de memoria reservado inicialmente
+        emit(Machine.POPop, 0, 0, 2);
+
         return null;
     }
 
     /**
+     * Visitador para un nodo CaseCommand del AST.
      *
-     * @param ast
-     * @param o
-     * @return null El visit case no se utiliza ya que los casos se analizan de
-     * una vez en el visitMatchCommand
+     * Este método no genera código TAM directamente, ya que los casos son
+     * procesados y evaluados de forma inmediata dentro del método
+     * visitMatchCommand.
+     *
+     * @param ast Nodo CaseCommand que representa un caso individual dentro de
+     * un match.
+     * @param o Frame actual de generación de código (no se utiliza en este
+     * método).
+     * @return Siempre retorna null.
      */
     public Object visitCase(CaseCommand ast, Object o) {
         return null;
     }
+
 
     // Expressions
     public Object visitArrayExpression(ArrayExpression ast, Object o) {
@@ -505,59 +552,100 @@ public final class Encoder implements Visitor {
     para diasmes 2 4,6,9 u 11 si retorna el valor correspondiente
     para otherwhise retorna 1
      */
+    
+    /**
+     * Genera el código TAM para una expresión 'match'.
+     *
+     * Evalúa una expresión inicial y compara su resultado contra las constantes
+     * de cada caso. Si encuentra coincidencia, evalúa y deja en la pila la
+     * expresión resultado asociada. Si no hay coincidencias, evalúa y deja en
+     * la pila la expresión 'otherwise'.
+     *
+     * @param ast Nodo MatchExpression del AST que representa la expresión
+     * match.
+     * @param o Frame actual de generación de código.
+     * @return Devuelve Integer(1) indicando que una expresión queda en la pila.
+     */
     public Object visitMatchExpressionFuncionalDMCases(MatchExpression ast, Object o) {
+        // Se convierte el parámetro de entrada al frame de ejecución actual
         Frame frame = (Frame) o;
 
-        emit(Machine.PUSHop, 0, 0, 1); // Reservamos espacio para la bandera de match
-        ast.E.visit(this, frame);      // Evaluamos la expresión principal
+        // Reserva espacio en la pila para almacenar una bandera que indica si hubo un match exitoso
+        emit(Machine.PUSHop, 0, 0, 1);
 
-        List<Integer> jumpEndCaseAddrs = new ArrayList<>(); // Para parchar saltos después de un match exitoso
+        // Genera código para evaluar la expresión principal del match
+        ast.E.visit(this, frame);
 
+        // Lista para almacenar las direcciones de salto tras un match exitoso
+        List<Integer> jumpEndCaseAddrs = new ArrayList<>();
+
+        // Itera sobre todos los casos del match
         for (CaseExpression caseExpr : ast.cases) {
+            // Itera sobre todas las constantes asociadas a este caso
             for (Expression constExpr : caseExpr.constExpressions) {
-                emit(Machine.LOADop, 1, Machine.STr, -1); // Cargamos la expresión evaluada
-                constExpr.visit(this, frame);             // Evaluamos una de las constantes
+                // Carga el valor evaluado de la expresión principal
+                emit(Machine.LOADop, 1, Machine.STr, -1);
 
-                emit(Machine.LOADLop, 0, 0, 1); // Size para comparación
-                emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.eqDisplacement); // Comparar igualdad
+                // Genera código para evaluar la constante
+                constExpr.visit(this, frame);
 
+                // Carga el tamaño requerido para comparación (1 palabra)
+                emit(Machine.LOADLop, 0, 0, 1);
+
+                // Compara el valor del match con la constante
+                emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.eqDisplacement);
+
+                // Si no son iguales, prepara un salto al siguiente case
                 int jumpIfNotEqualAddr = nextInstrAddr;
-                emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, 0); // Si no son iguales, saltar
+                emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, 0);
 
-                emit(Machine.POPop, 0, 0, 1); // 🔥 Quitar 'm' de la pila
+                // Si son iguales:
+                emit(Machine.POPop, 0, 0, 1); // Quita la copia del match
 
-                caseExpr.resultExpression.visit(this, frame); // 🔥 Evaluamos el resultado y lo dejamos en pila
+                // Evalúa la expresión resultado de este caso
+                caseExpr.resultExpression.visit(this, frame);
 
-                emit(Machine.LOADLop, 0, 0, 1);               // Cargamos 'true'
-                emit(Machine.STOREop, 1, Machine.STr, -3);     // Guardamos 'true' en la bandera (ajustar desplazamiento)
+                // Marca que se encontró un match exitoso
+                emit(Machine.LOADLop, 0, 0, 1);
+                emit(Machine.STOREop, 1, Machine.STr, -3);
 
-                emit(Machine.LOADop, 1, Machine.STr, -1);      // 🔥 Recargamos el resultado para que quede en el tope
+                // Recarga el resultado en la pila para mantenerlo en tope
+                emit(Machine.LOADop, 1, Machine.STr, -1);
 
+                // Salta al final del match para evitar seguir evaluando otros casos
                 int jumpAfterCase = nextInstrAddr;
-                emit(Machine.JUMPop, Machine.CBr, 0, 0);       // Saltamos al final
+                emit(Machine.JUMPop, Machine.CBr, 0, 0);
                 jumpEndCaseAddrs.add(jumpAfterCase);
 
+                // Se parchea el salto de desigualdad para probar el siguiente case
                 patch(jumpIfNotEqualAddr, nextInstrAddr);
             }
         }
 
-        emit(Machine.LOADop, 1, Machine.STr, -2); // Cargamos la bandera de match
+        // Verifica si se encontró un match exitoso
+        emit(Machine.LOADop, 1, Machine.STr, -2);
         int jumpIfMatched = nextInstrAddr;
-        emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, 0); // Si hubo match, saltamos el otherwise
+        emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, 0);
 
-        emit(Machine.POPop, 0, 0, 1); // 🔥 Quitar 'm' de la pila
-        ast.EOther.visit(this, frame); // Evaluamos otherwise
+        // Si no hubo match, elimina la copia y evalúa la expresión 'otherwise'
+        emit(Machine.POPop, 0, 0, 1);
+        ast.EOther.visit(this, frame);
 
+        // Parchea todos los saltos de match exitosos
         for (int addr : jumpEndCaseAddrs) {
             patch(addr, nextInstrAddr);
         }
 
+        // Parchea el salto que evita el otherwise si hubo un match exitoso
         patch(jumpIfMatched, nextInstrAddr);
 
-        emit(Machine.POPop, 0, 0, 1); // Liberamos bandera
-        return new Integer(1); // Siempre 1 resultado en la pila
-    }
+        // Libera la bandera de control
+        emit(Machine.POPop, 0, 0, 1);
 
+        // Retorna indicando que una expresión quedó en la pila
+        return new Integer(1);
+    }
+    
     /*
     este retorna bien los valores de los otherwise
     let
@@ -690,6 +778,19 @@ public final class Encoder implements Visitor {
         return new Integer(1); // Deja 1 valor en la pila
     }
 
+    /**
+     * Visitador para un nodo CaseExpression del AST.
+     *
+     * Este método no genera código TAM directamente, ya que los casos de la
+     * expresión match son procesados y evaluados de manera inmediata dentro del
+     * método visitMatchExpressionFuncionalDMCases.
+     *
+     * @param ast Nodo CaseExpression que representa un caso dentro de una
+     * expresión match.
+     * @param o Frame actual de generación de código (no se utiliza en este
+     * método).
+     * @return Siempre retorna null.
+     */
     public Object visitCaseExpression(CaseExpression ast, Object o) {
         return null;
     }
