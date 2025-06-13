@@ -7,5 +7,5 @@ let
             otherwise: 0
         end
 in
-    n := 6;
+    n := 3;
     putint(example(n))

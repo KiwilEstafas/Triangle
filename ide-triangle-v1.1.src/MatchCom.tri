@@ -2,7 +2,7 @@ let
   var n : Integer
 in
   n := 9;
-  match (n > 7) of
-    case false : putint(2)
+  match (n > 3) of
     case true : putint(1)
+case false: putint(2)
   end
