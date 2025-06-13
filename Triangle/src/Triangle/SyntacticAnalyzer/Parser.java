@@ -13,7 +13,6 @@
  */
 package Triangle.SyntacticAnalyzer;
 
-import java.util.LinkedHashMap;
 
 import Triangle.ErrorReporter;
 import Triangle.AbstractSyntaxTrees.*;
@@ -285,7 +284,6 @@ public class Parser {
                 Declaration dAST = parseDeclaration();
                 accept(Token.IN);
                 Command cAST = parseCommand();
-                //Se cambio a parseCommand para que pueda analizar el match dentro del let
                 finish(commandPos);
                 commandAST = new LetCommand(dAST, cAST, commandPos);
             }
@@ -314,7 +312,6 @@ public class Parser {
             break;
 
             case Token.FOR: {
-                Expression eAST = parseExpression();
                 // Se reconoce el inicio de un comando 'for'
                 acceptIt();
                 // Se parsea la variable de control del ciclo
@@ -336,16 +333,14 @@ public class Parser {
                 } else {
                     // Si no se encuentra ni 'to' ni 'downto', se genera un error sintáctico
                     syntacticError("Expected TO or DOWNTO, but found \"%\"", currentToken.spelling);
-                    isDownto = false; // Valor por defecto en caso de error para continuar la compilación
+                    isDownto = false; // por si acaso
                 }
 
                 // Se parsea la expresión final del ciclo
                 Expression e2AST = parseExpression();
                 // Se espera y consume el token 'do'
                 accept(Token.DO);
-                // Se parsea el comando que se ejecutará en cada iteración
-                Command cAST = parseSingleCommand();
-                // Se marca la posición final del comando 'for'
+                Command cAST = parseSingleCommand(); // comando a ejecutar en cada iteración
                 finish(commandPos);
 
                 // Se crea el nodo AST correspondiente al 'for'
@@ -354,31 +349,20 @@ public class Parser {
             break;
 
             case Token.REPEAT: {
-                // Se reconoce y consume la palabra clave 'repeat'
-                acceptIt();
-                // Se parsea el comando que se repetirá en el ciclo
-                Command cAST = parseSingleCommand();
-                // Se espera y consume la palabra clave 'until'
-                accept(Token.UNTIL);
-                // Se parsea la expresión booleana que actúa como condición de finalización
-                Expression eAST = parseExpression();
-                // Se marca la posición final del comando 'repeat'
-                finish(commandPos);
-                // Se crea el nodo AST correspondiente al comando 'repeat'
-                commandAST = new RepeatCommand(cAST, eAST, commandPos);
+                acceptIt(); // consume 'repeat'
+                Command cAST = parseSingleCommand(); // bloque a repetir
+                accept(Token.UNTIL); // consume 'until'
+                Expression eAST = parseExpression(); // condición booleana
+                finish(commandPos); // finaliza el posicionamiento
+                commandAST = new RepeatCommand(cAST, eAST, commandPos); // construye el nodo AST
             }
             break;
 
             case Token.UNTIL: {
-                // Se reconoce y consume la palabra clave 'until'
-                acceptIt();
-                // Se parsea la expresión booleana que actuará como condición de término
-                Expression eAST = parseExpression();
-                // Se espera y consume la palabra clave 'do'
-                accept(Token.DO);
-                // Se parsea el comando que se ejecutará mientras la condición no se cumpla
-                Command cAST = parseSingleCommand();
-                // Se marca la posición final del comando 'until'
+                acceptIt(); // consume 'until'
+                Expression eAST = parseExpression(); // la condición
+                accept(Token.DO); // consume 'do'
+                Command cAST = parseSingleCommand(); // el bloque que se ejecuta mientras no se cumpla
                 finish(commandPos);
                 // Se crea el nodo AST correspondiente al comando 'until'
                 commandAST = new UntilCommand(cAST, eAST, commandPos);
@@ -496,7 +480,6 @@ public class Parser {
                 expressionAST = new IfExpression(e1AST, e2AST, e3AST, expressionPos);
             }
             break;
-
             case Token.MATCH: {
                 // Se reconoce y consume la palabra clave 'match'
                 acceptIt();
@@ -606,15 +589,6 @@ public class Parser {
             }
             break;
 
-            case Token.TRUE:
-            case Token.FALSE: {
-                BoolLiteral blAST = new BoolLiteral(currentToken.spelling, currentToken.position);
-                acceptIt();
-                finish(expressionPos);
-                expressionAST = new BoolExpression(blAST, expressionPos);
-            }
-            break;
-
             case Token.LBRACKET: {
                 acceptIt();
                 ArrayAggregate aaAST = parseArrayAggregate();
@@ -663,6 +637,14 @@ public class Parser {
                 expressionAST = parseExpression();
                 accept(Token.RPAREN);
                 break;
+            case Token.TRUE:
+            case Token.FALSE: {
+                BoolLiteral blAST = new BoolLiteral(currentToken.spelling, currentToken.position);
+                acceptIt();
+                finish(expressionPos);
+                expressionAST = new BoolExpression(blAST, expressionPos);
+            }
+            break;
 
             default:
                 syntacticError("\"%\" cannot start an expression",
