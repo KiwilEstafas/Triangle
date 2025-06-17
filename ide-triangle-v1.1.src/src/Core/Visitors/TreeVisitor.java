@@ -30,6 +30,7 @@ import Triangle.AbstractSyntaxTrees.EmptyCommand;
 import Triangle.AbstractSyntaxTrees.EmptyExpression;
 import Triangle.AbstractSyntaxTrees.EmptyFormalParameterSequence;
 import Triangle.AbstractSyntaxTrees.ErrorTypeDenoter;
+import Triangle.AbstractSyntaxTrees.Expression;
 import Triangle.AbstractSyntaxTrees.FuncActualParameter;
 import Triangle.AbstractSyntaxTrees.FuncDeclaration;
 import Triangle.AbstractSyntaxTrees.FuncFormalParameter;
@@ -195,9 +196,20 @@ public class TreeVisitor implements Visitor {
         return(createUnary("Vname Expression", ast.V));
     }
     
-    public Object visitMatchExpression(MatchExpression ast, Object o) {
-        return (createUnary("MatchExpr.", ast.E));
-    }
+ public Object visitMatchExpression(MatchExpression ast, Object obj) {
+        DefaultMutableTreeNode matchNode = new DefaultMutableTreeNode("Match Expression");
+        // Nodo para la expresión principal
+        matchNode.add((DefaultMutableTreeNode) ast.E1.visit(this, null));
+        // Nodo para la lista de casos
+        for (Expression caseLiteral : ast.EList.keySet()) {
+            Expression caseExpression = ast.EList.get(caseLiteral);
+            matchNode.add((DefaultMutableTreeNode) caseLiteral.visit(this, null)); // Literal del caso
+            matchNode.add((DefaultMutableTreeNode) caseExpression.visit(this, null)); // Expresión del caso
+        }
+        matchNode.add((DefaultMutableTreeNode) ast.E2.visit(this, null));
+
+        return matchNode;
+    }   
 
     public Object visitCaseExpression(CaseExpression ce, Object o) {
         throw new UnsupportedOperationException("TreeVisitor.visitCaseExpression: Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody

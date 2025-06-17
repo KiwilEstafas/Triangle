@@ -84,6 +84,7 @@ import Triangle.CodeGenerator.KnownValue;
 import Triangle.CodeGenerator.UnknownAddress;
 import Triangle.CodeGenerator.UnknownRoutine;
 import Triangle.CodeGenerator.UnknownValue;
+import java.util.LinkedHashMap;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -274,18 +275,19 @@ public class TableVisitor implements Visitor {
         return (null);
     }
 
-    public Object visitMatchExpression(MatchExpression ast, Object o) {
-        ast.E.visit(this, null);
-
-        for (CaseExpression c : ast.cases) {
-            c.visit(this, null);
+  public Object visitMatchExpression(MatchExpression ast, Object o) {
+        ast.E1.visit(this, null);
+        LinkedHashMap<Expression, Expression> map = ast.EList;
+        // visitar cases
+        for (Expression e : map.keySet()) {
+            Expression e2 = map.get(e);
+            e2.visit(this, null);
+            e.visit(this, null);
         }
-
-        if (ast.EOther != null) {
-            ast.EOther.visit(this, null);
-        }
+        
+        ast.E2.visit(this, null);
         return null;
-    }
+    } 
 
     public Object visitCaseExpression(CaseExpression ast, Object o) {
 
