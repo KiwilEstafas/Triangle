@@ -17,6 +17,7 @@ package Triangle.SyntacticAnalyzer;
 import Triangle.ErrorReporter;
 import Triangle.AbstractSyntaxTrees.*;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class Parser {
@@ -480,69 +481,41 @@ public class Parser {
                 expressionAST = new IfExpression(e1AST, e2AST, e3AST, expressionPos);
             }
             break;
-            case Token.MATCH: {
-                // Se reconoce y consume la palabra clave 'match'
-                acceptIt();
-                // Se espera y consume el paréntesis de apertura '('
-                accept(Token.LPAREN);
-                // Se parsea la expresión que será evaluada en el match
-                Expression eAST = parseExpression();
-                // Se espera y consume el paréntesis de cierre ')'
-                accept(Token.RPAREN);
-                // Se espera y consume la palabra clave 'of'
-                accept(Token.OF);
-
-                // Lista que almacenará todos los casos (case) definidos en el match
-                List<CaseExpression> cases = new ArrayList<>();
-                // Objeto para capturar la posición fuente de cada caso
-                SourcePosition casePos = new SourcePosition();
-
-                // Bucle que recorre todos los casos definidos con la palabra clave 'case'
-                while (currentToken.kind == Token.CASE) {
-                    // Se reconoce y consume el token 'case'
-                    accept(Token.CASE);
-                    // Se parsea la primera constante del caso
-                    List<Expression> constList = new ArrayList<>();
-                    constList.add(parseExpression());
-
-                    // Mientras haya comas, se parsean constantes adicionales
-                    while (currentToken.kind == Token.COMMA) {
-                        acceptIt();
-                        constList.add(parseExpression());
-                    }
-
-                    // Se espera y consume el token ':'
-                    accept(Token.COLON);
-                    // Se parsea la expresión asociada a este caso
-                    Expression exprAST = parseExpression();
-
-                    // Se marca la posición final del caso
-                    finish(casePos);
-                    // Se agrega el nuevo CaseExpression a la lista de casos
-                    cases.add(new CaseExpression(constList, exprAST, casePos));
-                }
-
-                // Expresión a ejecutar en caso de no coincidir ningún case
-                Expression otherwise = null;
-
-                // Verifica si existe una cláusula 'otherwise'
-                if (currentToken.kind == Token.OTHERWISE) {
-                    // Se reconoce y consume el token 'otherwise'
-                    accept(Token.OTHERWISE);
-                    // Se espera y consume el token ':'
-                    accept(Token.COLON);
-                    // Se parsea la expresión asociada al 'otherwise'
-                    otherwise = parseExpression();
-                }
-
-                // Se espera y consume la palabra clave 'end'
-                accept(Token.END);
-                // Se marca la posición final de la expresión match
-                finish(expressionPos);
-                // Se crea el nodo AST correspondiente a la expresión match
-                expressionAST = new MatchExpression(eAST, cases, otherwise, expressionPos);
+case Token.MATCH:
+      {
+        acceptIt();
+        LinkedHashMap<Expression, Expression> caseList = new LinkedHashMap<>();
+        Expression eAST = parseExpression();
+        accept(Token.OF);
+        // cases
+        Expression caAST; // case
+        while (currentToken.kind == Token.CASE){
+            List <Expression> expressions;
+            expressions = new ArrayList<>();
+            accept(Token.CASE);
+            caAST = parseExpression();
+            expressions.add(caAST);
+            while (currentToken.kind == Token.COMMA){
+              accept(Token.COMMA);
+              caAST = parseExpression();
+              expressions.add(caAST);
             }
-            break;
+
+            accept(Token.COLON);
+            Expression ecAST = parseExpression();
+            for (Expression exp : expressions){
+              caseList.put(exp,ecAST);
+            }
+        }
+        // Otherwise
+        accept(Token.OTHERWISE);
+        accept(Token.COLON);
+        Expression e2AST = parseExpression();
+        accept(Token.END);
+        finish(expressionPos);
+        expressionAST = new MatchExpression(eAST, caseList, e2AST, expressionPos);
+      } break;
+
 
             default:
                 expressionAST = parseSecondaryExpression();

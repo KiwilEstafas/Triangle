@@ -367,47 +367,37 @@ public final class Checker implements Visitor {
      * @return TypeDenoter El tipo resultante de la expresión `match` (el tipo
      * común de los resultados de los `case` y el `otherwise`).
      */
-    public Object visitMatchExpression(MatchExpression ast, Object o) {
-        // Visita y obtiene el tipo de la expresión principal del `match`.
-        TypeDenoter eType = (TypeDenoter) ast.E.visit(this, o);
-
-        // Verifica que la expresión principal sea de tipo entero o booleano.
-        if (!(eType.equals(StdEnvironment.integerType) || eType.equals(StdEnvironment.booleanType))) {
-            reporter.reportError("La expresion debe de ser tipo booleano o integer", "", ast.E.position);
-        }
-
-        TypeDenoter resultType = null; // Variable para almacenar el tipo común de los resultados.
-
-        // Itera sobre cada una de las cláusulas `case` dentro del `match`.
-        for (CaseExpression caseExpr : ast.cases) {
-            for (Expression constExpr : caseExpr.constExpressions) {
-                TypeDenoter constType = (TypeDenoter) constExpr.visit(this, o);
-                if (!constType.equals(eType)) {
-                    reporter.reportError("Las constantes en los case deben tener el mismo tipo que la expresión del match", "", constExpr.position);
-                }
-            }
-
-            TypeDenoter caseResultType = (TypeDenoter) caseExpr.resultExpression.visit(this, o);
-
-            if (resultType == null) {
-                resultType = caseResultType;
-            } else {
-                if (!caseResultType.equals(resultType)) {
-                    reporter.reportError("Todas las expresiones en los case deben devolver el mismo tipo", "", caseExpr.resultExpression.position);
-                }
-            }
-        }
-
-        TypeDenoter otherwiseType = (TypeDenoter) ast.EOther.visit(this, o);
-        // Verifica que el tipo de la expresión del `otherwise` coincida con el tipo común de los resultados de los `case`.
-        if (!otherwiseType.equals(resultType)) {
-            reporter.reportError("EL tipo de expresion del Otherwise no es el mismo que el de los case", "", ast.EOther.position);
-        }
-
-        // Retorna el tipo común de los resultados, que es el tipo de la expresión `match`.
-        return resultType;
+    // Match Expression
+  public Object visitMatchExpression(MatchExpression ast, Object o) {
+   
+      TypeDenoter matchType = (TypeDenoter) ast.E1.visit(this, null);
+    TypeDenoter caseExpressionType = null;
+    // La expresión principal debe ser de tipo Integer o Boolean
+    if (!matchType.equals(StdEnvironment.integerType) && !matchType.equals(StdEnvironment.booleanType)) {
+        reporter.reportError("Match expression must be of type Integer or Boolean", "", ast.E1.position);
     }
 
+    // Verificar cada caso en la lista de casos
+    for (Expression caseLiteral : ast.EList.keySet()) {
+        TypeDenoter caseLiteralType = (TypeDenoter) caseLiteral.visit(this, null);
+        if (!caseLiteralType.equals(matchType)) {
+            reporter.reportError("Case literal type does not match match expression type", "", caseLiteral.position);
+        }
+
+        // Verificar el tipo de la expresión asociada al caso
+        Expression caseExpression = ast.EList.get(caseLiteral);
+        caseExpressionType = (TypeDenoter)caseExpression.visit(this, null);
+    }
+
+    // Verificar otherwise
+    ast.E2.visit(this, null);
+    if (!ast.E2.type.equals(caseExpressionType) && caseExpressionType != null) {
+        reporter.reportError("Otherwise expression type does not match match expression type", "", ast.E2.position);
+    }
+    
+    ast.type = StdEnvironment.integerType;
+    return ast.type;
+  }
     public Object visitCaseExpression(CaseExpression ast, Object o) {
         return null;
     }

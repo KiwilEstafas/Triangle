@@ -1,16 +1,3 @@
-/*
- * @(#)Token.java                        2.1 2003/10/07
- *
- * Copyright (C) 1999, 2003 D.A. Watt and D.F. Brown
- * Dept. of Computing Science, University of Glasgow, Glasgow G12 8QQ Scotland
- * and School of Computer and Math Sciences, The Robert Gordon University,
- * St. Andrew Street, Aberdeen AB25 1HG, Scotland.
- * All rights reserved.
- *
- * This software is provided free for educational use only. It may
- * not be used for commercial purposes without the prior written permission
- * of the authors.
- */
 package Triangle.SyntacticAnalyzer;
 
 final class Token extends Object {
@@ -43,7 +30,6 @@ final class Token extends Object {
 
         this.spelling = spelling;
         this.position = position;
-
     }
 
     public static String spell(int kind) {
@@ -84,9 +70,9 @@ final class Token extends Object {
             REPEAT = 23,
             THEN = 24,
             TO = 25,
-            UNTIL = 26,
-            TRUE = 27,
-            TYPE = 28,
+            TRUE = 26,
+            TYPE = 27,
+            UNTIL = 28,
             VAR = 29,
             WHILE = 30,
             // punctuation...
@@ -108,53 +94,54 @@ final class Token extends Object {
             ERROR = 44;
 
     private static String[] tokenTable = new String[]{
-        "<int>",
-        "<char>",
-        "<identifier>",
-        "<operator>",
-        "array",
-        "begin",
-        "case",
-        "const",
-        "do",
-        "downto",
-        "else",
-        "end",
-        "false",
-        "for",
-        "func",
-        "if",
-        "in",
-        "let",
-        "match",
-        "of",
-        "otherwise",
-        "proc",
-        "record",
-        "repeat",
-        "then",
-        "to",
-        "until",
-        "true",
-        "type",
-        "var",
-        "while",
-        ".",
-        ":",
-        ";",
-        ",",
-        ":=",
-        "~",
-        "(",
-        ")",
-        "[",
-        "]",
-        "{",
-        "}",
-        "",
-        "<error>",};
+        "<int>",        // 0
+        "<char>",       // 1
+        "<identifier>", // 2
+        "<operator>",   // 3
+        "array",        // 4
+        "begin",        // 5
+        "case",         // 6
+        "const",        // 7
+        "do",           // 8
+        "downto",       // 9
+        "else",         // 10
+        "end",          // 11
+        "false",        // 12
+        "for",          // 13
+        "func",         // 14
+        "if",           // 15
+        "in",           // 16
+        "let",          // 17
+        "match",        // 18
+        "of",           // 19
+        "otherwise",    // 20
+        "proc",         // 21
+        "record",       // 22
+        "repeat",       // 23
+        "then",         // 24
+        "to",           // 25
+        "true",         // 26
+        "type",         // 27
+        "until",        // 28 ✅
+        "var",          // 29
+        "while",        // 30
+        ".",            // 31
+        ":",            // 32
+        ";",            // 33
+        ",",            // 34
+        ":=",           // 35
+        "~",            // 36
+        "(",            // 37
+        ")",            // 38
+        "[",            // 39
+        "]",            // 40
+        "{",            // 41
+        "}",            // 42
+        "",             // 43 (EOT)
+        "<error>",      // 44
+    };
 
-    private final static int firstReservedWord = Token.ARRAY,
-            lastReservedWord = Token.WHILE;
+    private final static int firstReservedWord = Token.ARRAY;
+    private final static int lastReservedWord = Token.WHILE;
 
 }

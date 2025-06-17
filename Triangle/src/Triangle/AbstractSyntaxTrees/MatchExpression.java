@@ -1,23 +1,24 @@
 package Triangle.AbstractSyntaxTrees;
 
 import Triangle.SyntacticAnalyzer.SourcePosition;
-import java.util.List;
+import java.util.LinkedHashMap;
 
 public class MatchExpression extends Expression {
     
-    // Constructor para crear un nodo del AST para una expresión 'match'.
-    public MatchExpression(Expression eAST, List<CaseExpression> cases, Expression otherwiseExpression, SourcePosition thePosition) {
-        super(thePosition);
-        E = eAST;
-        this.cases = cases;
-        this.EOther = otherwiseExpression;
-    }
-
-    public Object visit(Visitor v, Object o) {
+    public MatchExpression (Expression eAST, LinkedHashMap<Expression, Expression> EList, Expression e2AST, SourcePosition thePosition) {
+        super (thePosition);
+        E1 = eAST;
+        this.EList = EList;
+        E2 = e2AST;
+    } 
+    
+    public Object visit (Visitor v, Object o) {
         return v.visitMatchExpression(this, o);
     }
     
-    public Expression E;
-    public List<CaseExpression> cases;
-    public Expression EOther;
+    public Expression E1;
+    public LinkedHashMap<Expression, Expression> EList;
+    public Expression E2;
+    
+
 }
